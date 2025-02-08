@@ -22,8 +22,11 @@ def redirect_to_lending(request):
     return redirect("lending/")
 
 urlpatterns = [
+    # Forces empty path to also point to clothing_lending.urls
+    # This works but if you add "/lending" to the end, then it shows the same exact page
 	#path('', include('clothing_lending.urls')),
-	path('', redirect_to_lending),
+	path('', redirect_to_lending), # I think this change makes more sense
+    # This redirects empty path to "/lending/" so that we go directly into the app I think
     path('admin/', admin.site.urls),
 	path('lending/', include("clothing_lending.urls")),
 ]
