@@ -19,7 +19,6 @@ from django.urls import path, include
 from django.shortcuts import redirect
 
 urlpatterns = [
-	path('', redirect('lending/')),
     path('admin/', admin.site.urls),
 	path('lending/', include("clothing_lending.urls")),
 ]
