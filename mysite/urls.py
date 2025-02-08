@@ -18,8 +18,12 @@ from django.contrib import admin
 from django.urls import path, include
 from django.shortcuts import redirect
 
+def redirect_to_lending(request):
+    return redirect("lending/")
+
 urlpatterns = [
-	path('', include('clothing_lending.urls')),
+	#path('', include('clothing_lending.urls')),
+	path('', redirect_to_lending),
     path('admin/', admin.site.urls),
 	path('lending/', include("clothing_lending.urls")),
 ]
