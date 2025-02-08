@@ -6,5 +6,5 @@ class DummyTestCase(TestCase):
         x = 1
         y = 2
     
-    def test_dummy_test_case_pass(self):
+    def dummy_test_case_pass(self):
         self.assertEqual(1, 1)
