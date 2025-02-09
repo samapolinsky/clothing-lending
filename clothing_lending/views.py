@@ -3,7 +3,7 @@ from django.http import HttpResponse
 
 # Create your views here.
 def index(request):
-	return HttpResponse("Hello world! If you're seeing this it means my django and heoku have been successfully linked I think.")
+	return HttpResponse("Hello world! If you're seeing this it means my django and heoku have been successfully linked I think.\nTesting Django CI with heroku.")
 
 def catalog(request):
 	return HttpResponse("This is the catalog of items.")
