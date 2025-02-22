@@ -1,4 +1,6 @@
-from django.shortcuts import render
+from allauth.account.views import logout
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
 
 
@@ -11,3 +13,18 @@ def catalog(request):
 
 def checkout(request):
 	return HttpResponse("I think this is a checkout idk if we need one.")
+
+@login_required
+def librarian_page(request):
+	return render(request, 'librarian/page.html')
+
+
+@login_required
+def patron_page(request):
+	return render(request, 'patron/page.html')
+
+
+def logout_view(request):
+	logout(request)
+	# request.session.flush()
+	return redirect('index.html')
