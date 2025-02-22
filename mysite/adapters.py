@@ -20,8 +20,8 @@ class CustomAccountAdapter(DefaultAccountAdapter):
     def get_login_redirect_url(self, request):
         user = request.user
         if user.user_type == 1:
-            return '/lending/librarian/dashboard/'
+            return '/lending/librarian/page/'
         elif user.user_type == 2:
-            return '/lending/patron/profile/'
+            return '/lending/patron/page/'
         return super().get_login_redirect_url(request)
 

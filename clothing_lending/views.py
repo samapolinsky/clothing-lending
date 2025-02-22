@@ -1,5 +1,5 @@
 from allauth.account.views import logout
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 
@@ -14,12 +14,20 @@ def catalog(request):
 def checkout(request):
 	return HttpResponse("I think this is a checkout idk if we need one.")
 
-@login_required
+def is_librarian(user):
+	return user.is_authenticated and user.user_type == 1
+
+# @login_required
+@user_passes_test(is_librarian)
 def librarian_page(request):
+	# need to change permissions so only librarians can access this page
 	return render(request, 'librarian/page.html')
 
+def is_patron(user):
+	return user.is_authenticated and user.user_type == 2
 
-@login_required
+# @login_required
+@user_passes_test(is_patron)
 def patron_page(request):
 	return render(request, 'patron/page.html')
 
