@@ -34,6 +34,12 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'clothing-lending-app-10bcae00b7ec.he
 
 AUTH_USER_MODEL = 'clothing_lending.User'
 
+SOCIALACCOUNT_AUTO_SIGNUP = True  # Automatically create users when they sign up via social accounts
+SOCIALACCOUNT_EMAIL_REQUIRED = True  # Ensure the email is captured
+SOCIALACCOUNT_EMAIL_VERIFICATION = 'none'  # Disable email verification for social accounts
+SOCIALACCOUNT_ADAPTER = 'mysite.adapters.CustomSocialAccountAdapter'
+
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -81,7 +87,8 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
-SITE_ID = 3
+SITE_ID = 1
+SITE_MODEL = 'sites.Site'
 
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'

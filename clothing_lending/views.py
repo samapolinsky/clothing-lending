@@ -1,7 +1,10 @@
 from allauth.account.views import logout
+from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
+
+from clothing_lending.models import User, Patron
 
 
 # Create your views here.
@@ -35,4 +38,42 @@ def patron_page(request):
 def logout_view(request):
 	logout(request)
 	# request.session.flush()
+	return redirect('index.html')
+
+def get_google_user_info(request):
+	# Check if the user is authenticated via Google
+	if request.user.is_authenticated and request.user.social_auth.filter(provider='google-oauth2').exists():
+		social_auth = request.user.social_auth.get(provider='google-oauth2')
+		user_info = {
+			'email': social_auth.extra_data.get('email'),
+			'given_name': social_auth.extra_data.get('given_name'),
+			'family_name': social_auth.extra_data.get('family_name'),
+			'name': social_auth.extra_data.get('name'),
+			'picture': social_auth.extra_data.get('picture'),
+		}
+		return user_info
+	else:
+		raise ValueError("User is not authenticated via Google OAuth.")
+
+def google_oauth_callback(request):
+	user_info = get_google_user_info(request)
+
+	# Check if the user already exists
+	try:
+		user = User.objects.get(email=user_info['email'])
+	except User.DoesNotExist:
+		# Create a new user
+		user = User.objects.create_user(
+			username=user_info['email'],
+			email=user_info['email'],
+			first_name=user_info.get('given_name', ''),
+			last_name=user_info.get('family_name', '')
+		)
+
+		# Create a Patron instance for the new user
+		Patron.objects.create(user=user)
+
+	# Log the user in
+	login(request, user)
+
 	return redirect('index.html')
