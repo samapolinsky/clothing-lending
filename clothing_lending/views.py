@@ -32,7 +32,28 @@ def is_patron(user):
 # @login_required
 @user_passes_test(is_patron)
 def patron_page(request):
-	return render(request, 'patron/page.html')
+	# Example items data - replace with database query later
+	items = [
+		{
+			'name': 'Black Formal Suit',
+			'category': 'Formal Wear',
+			'size': 'M',
+			'is_available': True,
+			'image': {
+				'url': 'https://example.com/suit.jpg'  # Replace with actual image URL
+			}
+		},
+		{
+			'name': 'Blue Business Dress',
+			'category': 'Business',
+			'size': 'S',
+			'is_available': True,
+			'image': {
+				'url': 'https://example.com/dress.jpg'  # Replace with actual image URL
+			}
+		},
+	]
+	return render(request, 'patron/page.html', {'items': items})
 
 
 def logout_view(request):
@@ -77,3 +98,20 @@ def google_oauth_callback(request):
 	login(request, user)
 
 	return redirect('index.html')
+
+def browse(request):
+	# In the future, you'll want to fetch these from your database
+	# This is just example data for now
+	items = [
+		{
+			'name': 'Black Formal Suit',
+			'category': 'Formal Wear',
+			'size': 'M',
+			'is_available': True,
+			'image': {
+				'url': 'https://example.com/suit.jpg'  # Replace with actual image URL
+			}
+		},
+		# Add more items as needed
+	]
+	return render(request, 'browse.html', {'items': items})
