@@ -32,6 +32,14 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'clothing-lending-app-10bcae00b7ec.he
 # Application definition
 # Useful link: https://web.archive.org/web/20210123204124/https://www.section.io/engineering-education/django-google-oauth/
 
+AUTH_USER_MODEL = 'clothing_lending.User'
+
+SOCIALACCOUNT_AUTO_SIGNUP = True  # Automatically create users when they sign up via social accounts
+SOCIALACCOUNT_EMAIL_REQUIRED = True  # Ensure the email is captured
+SOCIALACCOUNT_EMAIL_VERIFICATION = 'none'  # Disable email verification for social accounts
+SOCIALACCOUNT_ADAPTER = 'mysite.adapters.CustomSocialAccountAdapter'
+
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -63,6 +71,8 @@ AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend'
 ]
 
+ACCOUNT_ADAPTER = 'mysite.adapters.CustomAccountAdapter'
+
 ROOT_URLCONF = 'mysite.urls'
 
 SOCIALACCOUNT_PROVIDERS = {
@@ -77,7 +87,8 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
-SITE_ID = 3
+SITE_ID = 1
+SITE_MODEL = 'sites.Site'
 
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
@@ -85,7 +96,7 @@ LOGOUT_REDIRECT_URL = '/'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

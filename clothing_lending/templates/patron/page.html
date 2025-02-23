@@ -1,0 +1,458 @@
+{% load socialaccount %}
+<html>
+<head>
+    <title>Clothing Lending - Patron Page</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    {% if user.is_authenticated %}
+        <header>
+            <div class="header-content">
+                <h1 class="scramble-text">AIRDROBE<br></h1>
+                <nav>
+                    <span class="user-info">{{ user.username }}</span>
+                    <a href="{% url 'logout' %}" class="logout-btn">Exit</a>
+                </nav>
+            </div>
+        </header>
+
+        <div class="browse-container">
+            <div class="filters-sidebar">
+                <div class="filter-header">
+                    <h3>Filter Collection</h3>
+                </div>
+                
+                <div class="filter-section">
+                    <h4>Categories</h4>
+                    <div class="filter-options">
+                        <button class="filter-chip" data-category="formal">Formal Wear</button>
+                        <button class="filter-chip" data-category="casual">Casual</button>
+                        <button class="filter-chip" data-category="business">Business</button>
+                        <button class="filter-chip" data-category="accessories">Accessories</button>
+                    </div>
+                </div>
+                
+                <div class="filter-section">
+                    <h4>Size</h4>
+                    <div class="filter-options size-grid">
+                        <button class="filter-chip" data-size="xs">XS</button>
+                        <button class="filter-chip" data-size="s">S</button>
+                        <button class="filter-chip" data-size="m">M</button>
+                        <button class="filter-chip" data-size="l">L</button>
+                        <button class="filter-chip" data-size="xl">XL</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-content">
+                <div class="grid-header">
+                    <h2>Available Pieces</h2>
+                </div>
+                
+                <div class="items-grid">
+                    {% for item in items %}
+                    <div class="item-card">
+                        <div class="item-image">
+                            <img src="{{ item.image.url }}" alt="">
+                            {% if item.is_available %}
+                            <button class="borrow-btn">Borrow</button>
+                            {% endif %}
+                        </div>
+                        <div class="item-details">
+                            <div class="item-meta">
+                                <h3>{{ item.name }}</h3>
+                                <span class="item-category">{{ item.category }}</span>
+                                <span class="item-size">{{ item.size }}</span>
+                                <span class="item-status {% if item.is_available %}available{% else %}unavailable{% endif %}">
+                                    {{ item.is_available|yesno:"Available,Unavailable" }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="login-container">
+            <h1>CLOTHING<br>ARCHIVE</h1>
+            <a href="{% provider_login_url 'google' %}" class="google-login-btn">
+                <span class="login-dot"></span>
+                Enter with Google
+            </a>
+        </div>
+    {% endif %}
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background: #f8f9fa;
+            min-height: 100vh;
+            color: #111;
+        }
+
+        header {
+            background: #111;
+            padding: 2rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        header h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            color: white;
+            margin: 0;
+            font-size: 1.75rem;
+            line-height: 1.1;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .user-info {
+            color: #666;
+            margin-right: 2rem;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .logout-btn {
+            background: none;
+            color: white;
+            border: 1px solid white;
+            padding: 0.5rem 1.5rem;
+            text-decoration: none;
+            font-size: 0.9rem;
+            letter-spacing: 0.05em;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: white;
+            color: #111;
+        }
+
+        .browse-container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 3rem;
+            max-width: 1400px;
+            margin: 3rem auto;
+            padding: 0 2rem;
+        }
+
+        .filters-sidebar {
+            background: white;
+            padding: 2.5rem;
+            height: fit-content;
+            border-radius: 4px;
+        }
+
+        .filter-header {
+            margin-bottom: 2.5rem;
+        }
+
+        .filter-header h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            margin: 0;
+            font-size: 1.4rem;
+            letter-spacing: -0.02em;
+            color: #111;
+        }
+
+        .filter-section {
+            margin-bottom: 2.5rem;
+        }
+
+        .filter-section h4 {
+            color: #111;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .filter-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .filter-chip {
+            background: none;
+            border: 1px solid #ddd;
+            padding: 0.5rem 1rem;
+            border-radius: 100px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: #666;
+            transition: all 0.2s ease;
+        }
+
+        .filter-chip:hover {
+            border-color: #111;
+            color: #111;
+        }
+
+        .filter-chip.active {
+            background: #111;
+            color: white;
+            border-color: #111;
+        }
+
+        .size-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .size-grid .filter-chip {
+            min-width: 3rem;
+            text-align: center;
+            padding: 0.5rem 0.75rem;
+        }
+
+        .grid-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .grid-header h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            margin: 0;
+            font-size: 1.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .item-card {
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .item-card:hover {
+            transform: translateY(-8px);
+        }
+
+        .item-image {
+            position: relative;
+            height: 360px;
+            overflow: hidden;
+        }
+
+        .item-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .borrow-btn {
+            position: absolute;
+            bottom: 1rem;
+            left: 1rem;
+            right: 1rem;
+            background: #111;
+            color: white;
+            border: none;
+            padding: 0.75rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+            letter-spacing: 0.05em;
+            transition: all 0.3s ease;
+            opacity: 0;
+        }
+
+        .item-card:hover .borrow-btn {
+            opacity: 1;
+        }
+
+        .item-details {
+            padding: 1.25rem;
+        }
+
+        .item-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-top: 0;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .item-meta h3 {
+            margin: 0;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.1rem;
+            letter-spacing: -0.02em;
+            color: #111;
+        }
+
+        .login-container {
+            max-width: 400px;
+            margin: 8rem auto;
+            padding: 3rem;
+            background: white;
+            text-align: center;
+        }
+
+        .login-container h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.5rem;
+            line-height: 1.1;
+            margin-bottom: 3rem;
+            letter-spacing: -0.02em;
+        }
+
+        .google-login-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 1rem;
+            background: #111;
+            color: white;
+            padding: 1rem 2rem;
+            text-decoration: none;
+            font-size: 0.9rem;
+            letter-spacing: 0.05em;
+            transition: all 0.3s ease;
+        }
+
+        .login-dot {
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        @media (max-width: 1024px) {
+            .browse-container {
+                grid-template-columns: 1fr;
+            }
+
+            .filters-sidebar {
+                position: sticky;
+                top: 80px;
+                padding: 2rem;
+            }
+
+            .filter-options {
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                padding-bottom: 0.5rem;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .filter-chip {
+                flex-shrink: 0;
+            }
+        }
+
+        .scramble-text {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .scramble {
+            color: #4299e1;
+            font-weight: bold;
+        }
+    </style>
+
+    <script>
+        class TextScramble {
+            constructor(el) {
+                this.el = el;
+                this.chars = '!<>-_\\/[]{}—=+*^?#________';
+                this.originalText = this.el.innerText;
+                this.update = this.update.bind(this);
+            }
+            
+            setText(newText) {
+                const oldText = this.el.innerText;
+                const length = Math.max(oldText.length, newText.length);
+                const promise = new Promise((resolve) => this.resolve = resolve);
+                this.queue = [];
+                for (let i = 0; i < length; i++) {
+                    const from = oldText[i] || '';
+                    const to = newText[i] || '';
+                    const start = Math.floor(Math.random() * 20);
+                    const end = start + Math.floor(Math.random() * 20);
+                    this.queue.push({ from, to, start, end });
+                }
+                cancelAnimationFrame(this.frameRequest);
+                this.frame = 0;
+                this.update();
+                return promise;
+            }
+            
+            update() {
+                let output = '';
+                let complete = 0;
+                for (let i = 0, n = this.queue.length; i < n; i++) {
+                    let { from, to, start, end, char } = this.queue[i];
+                    if (this.frame >= end) {
+                        complete++;
+                        output += to;
+                    } else if (this.frame >= start) {
+                        if (!char || Math.random() < 0.28) {
+                            char = this.randomChar();
+                            this.queue[i].char = char;
+                        }
+                        output += `<span class="scramble">${char}</span>`;
+                    } else {
+                        output += from;
+                    }
+                }
+                this.el.innerHTML = output;
+                if (complete === this.queue.length) {
+                    this.resolve();
+                } else {
+                    this.frameRequest = requestAnimationFrame(this.update);
+                    this.frame++;
+                }
+            }
+            
+            randomChar() {
+                return this.chars[Math.floor(Math.random() * this.chars.length)];
+            }
+        }
+
+        // Initialize the scramble effect
+        const scrambleText = document.querySelector('.scramble-text');
+        const textScramble = new TextScramble(scrambleText);
+        
+        scrambleText.addEventListener('mouseenter', () => {
+            textScramble.setText(scrambleText.getAttribute('data-text') || textScramble.originalText);
+        });
+        
+        scrambleText.addEventListener('mouseleave', () => {
+            textScramble.setText(textScramble.originalText);
+        });
+
+        document.querySelectorAll('.filter-chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                chip.classList.toggle('active');
+            });
+        });
+    </script>
+</body>
+</html>

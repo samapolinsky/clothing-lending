@@ -17,6 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.shortcuts import redirect
+from clothing_lending import views
 
 def redirect_to_lending(request):
     return redirect("lending/")
@@ -29,4 +30,5 @@ urlpatterns = [
     # This redirects empty path to "/lending/" so that we go directly into the app I think
     path('admin/', admin.site.urls),
 	path('lending/', include("clothing_lending.urls")),
+	path('browse/', views.browse, name='browse'),
 ]
