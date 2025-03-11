@@ -47,28 +47,21 @@ def is_patron(user):
 # @login_required
 @user_passes_test(is_patron)
 def patron_page(request):
-	# Example items data - replace with database query later
-	items = [
-		{
-			'name': 'Black Formal Suit',
-			'category': 'Formal Wear',
-			'size': 'M',
-			'is_available': True,
-			'image': {
-				'url': 'https://example.com/suit.jpg'  # Replace with actual image URL
-			}
-		},
-		{
-			'name': 'Blue Business Dress',
-			'category': 'Business',
-			'size': 'S',
-			'is_available': True,
-			'image': {
-				'url': 'https://example.com/dress.jpg'  # Replace with actual image URL
-			}
-		},
-	]
-	return render(request, 'patron/page.html', {'items': items})
+    """
+    View for the patron dashboard
+    """
+    # Get all available items
+    items = Item.objects.filter(available=True)
+    
+    # Get a list of all categories for filtering
+    categories = Item.objects.values_list('category', flat=True).distinct()
+    
+    context = {
+        'items': items,
+        'categories': categories
+    }
+    
+    return render(request, 'patron/page.html', context)
 
 
 def logout_view(request):
