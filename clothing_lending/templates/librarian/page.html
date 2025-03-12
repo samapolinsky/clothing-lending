@@ -1,14 +1,85 @@
 {% load socialaccount %}
-<html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Librarian Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
 <body>
+    <div class="container mt-5">
+        {% if user.is_authenticated %}
+            <div class="row mb-4">
+                <div class="col">
+                    <h1>Welcome, Librarian {{ user.username }}!</h1>
+                    <p>This is your dashboard for managing collections and items.</p>
+                </div>
+                <div class="col-auto">
+                    <a href="{% url 'logout' %}" class="btn btn-secondary">Logout</a>
+                </div>
+            </div>
 
-{% block content %}
-    {% if user.is_authenticated %}
-        <p>Welcome, You are logged in as {{ user.username }}</p>
-        <h1>Welcome, Librarian!</h1>
-        <p>This is your dashboard.</p>
-    {% endif %}
-{% endblock %}
-<a href="{% url 'logout' %}">Logout</a>
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h4>Collections</h4>
+                        </div>
+                        <div class="card-body">
+                            <p>Manage your collections of items.</p>
+                            <a href="{% url 'add_collection' %}" class="btn btn-primary">Add New Collection</a>
+                            
+                            {% if collections %}
+                                <hr>
+                                <h5>Your Collections</h5>
+                                <ul class="list-group mt-3">
+                                    {% for collection in collections %}
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            {{ collection.name }}
+                                            <span class="badge bg-primary rounded-pill">{{ collection.items.count }} items</span>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h4>Items</h4>
+                        </div>
+                        <div class="card-body">
+                            <p>Add and manage individual items.</p>
+                            <a href="{% url 'add_item' %}" class="btn btn-success">Add New Item</a>
+                            
+                            {% if recent_items %}
+                                <hr>
+                                <h5>Recently Added Items</h5>
+                                <ul class="list-group mt-3">
+                                    {% for item in recent_items %}
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <a href="{% url 'item_detail' item.id %}">{{ item.name }}</a>
+                                            <span class="badge {% if item.available %}bg-success{% else %}bg-danger{% endif %} rounded-pill">
+                                                {% if item.available %}Available{% else %}Not Available{% endif %}
+                                            </span>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="alert alert-warning">
+                <p>You need to be logged in as a librarian to access this page.</p>
+                <a href="{% url 'account_login' %}" class="btn btn-primary">Login</a>
+            </div>
+        {% endif %}
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
