@@ -25,22 +25,30 @@
                 <div class="filter-section">
                     <h4>Categories</h4>
                     <div class="filter-options">
+                        {% for category in categories %}
+                        <button class="filter-chip" data-category="{{ category }}">{{ category }}</button>
+                        {% empty %}
                         <button class="filter-chip" data-category="formal">Formal Wear</button>
                         <button class="filter-chip" data-category="casual">Casual</button>
                         <button class="filter-chip" data-category="business">Business</button>
                         <button class="filter-chip" data-category="accessories">Accessories</button>
+                        {% endfor %}
                     </div>
                 </div>
                 
                 <div class="filter-section">
                     <h4>Size</h4>
                     <div class="filter-options size-grid">
-                        <button class="filter-chip" data-size="xs">XS</button>
-                        <button class="filter-chip" data-size="s">S</button>
-                        <button class="filter-chip" data-size="m">M</button>
-                        <button class="filter-chip" data-size="l">L</button>
-                        <button class="filter-chip" data-size="xl">XL</button>
+                        <button class="filter-chip" data-size="XS">XS</button>
+                        <button class="filter-chip" data-size="S">S</button>
+                        <button class="filter-chip" data-size="M">M</button>
+                        <button class="filter-chip" data-size="L">L</button>
+                        <button class="filter-chip" data-size="XL">XL</button>
                     </div>
+                </div>
+                
+                <div class="clear-filters-wrapper">
+                    <button id="clear-filters" class="clear-filters-btn">Clear All Filters</button>
                 </div>
             </div>
 
@@ -53,21 +61,30 @@
                     {% for item in items %}
                     <div class="item-card">
                         <div class="item-image">
-                            <img src="{{ item.image.url }}" alt="">
-                            {% if item.is_available %}
-                            <button class="borrow-btn">Borrow</button>
+                            {% if item.image_url %}
+                            <img src="{{ item.image_url }}" alt="{{ item.name }}">
+                            {% else %}
+                            <div class="placeholder-image">No image</div>
+                            {% endif %}
+                            
+                            {% if item.available %}
+                            <a href="{% url 'item_detail' item.id %}" class="borrow-btn">View Details</a>
                             {% endif %}
                         </div>
                         <div class="item-details">
                             <div class="item-meta">
                                 <h3>{{ item.name }}</h3>
                                 <span class="item-category">{{ item.category }}</span>
-                                <span class="item-size">{{ item.size }}</span>
-                                <span class="item-status {% if item.is_available %}available{% else %}unavailable{% endif %}">
-                                    {{ item.is_available|yesno:"Available,Unavailable" }}
+                                <span class="item-size">{{ item.get_size_display }}</span>
+                                <span class="item-status {% if item.available %}available{% else %}unavailable{% endif %}">
+                                    {{ item.available|yesno:"Available,Unavailable" }}
                                 </span>
                             </div>
                         </div>
+                    </div>
+                    {% empty %}
+                    <div class="no-items">
+                        <p>No items available at the moment.</p>
                     </div>
                     {% endfor %}
                 </div>
@@ -161,7 +178,7 @@
         }
 
         .filter-header {
-            margin-bottom: 2.5rem;
+            margin-bottom: 2rem;
         }
 
         .filter-header h3 {
@@ -170,6 +187,29 @@
             font-size: 1.4rem;
             letter-spacing: -0.02em;
             color: #111;
+        }
+        
+        .clear-filters-wrapper {
+            margin-top: 2.5rem;
+            text-align: center;
+        }
+        
+        .clear-filters-btn {
+            background: none;
+            border: 1px solid #ddd;
+            padding: 0.75rem 1.25rem;
+            font-size: 0.9rem;
+            color: #666;
+            border-radius: 100px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+        
+        .clear-filters-btn:hover {
+            border-color: #111;
+            color: #111;
+            background: rgba(0,0,0,0.03);
         }
 
         .filter-section {
@@ -248,15 +288,19 @@
         .item-card {
             background: white;
             transition: all 0.3s ease;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
         .item-card:hover {
-            transform: translateY(-8px);
+            transform: translateY(-4px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
 
         .item-image {
+            height: 320px;
             position: relative;
-            height: 360px;
             overflow: hidden;
         }
 
@@ -264,22 +308,38 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .item-card:hover .item-image img {
+            transform: scale(1.05);
+        }
+
+        .placeholder-image {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f1f1f1;
+            color: #999;
         }
 
         .borrow-btn {
             position: absolute;
-            bottom: 1rem;
-            left: 1rem;
-            right: 1rem;
-            background: #111;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.75);
             color: white;
-            border: none;
-            padding: 0.75rem;
-            cursor: pointer;
-            font-size: 0.9rem;
-            letter-spacing: 0.05em;
-            transition: all 0.3s ease;
+            text-align: center;
+            padding: 1rem;
+            text-decoration: none;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
             opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
         .item-card:hover .borrow-btn {
@@ -287,90 +347,90 @@
         }
 
         .item-details {
-            padding: 1.25rem;
-        }
-
-        .item-meta {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            margin-top: 0;
-            font-size: 0.9rem;
-            color: #666;
+            padding: 1.5rem;
         }
 
         .item-meta h3 {
-            margin: 0;
-            font-family: 'Space Grotesk', sans-serif;
+            margin: 0 0 0.5rem;
             font-size: 1.1rem;
-            letter-spacing: -0.02em;
-            color: #111;
+            font-weight: 600;
+        }
+
+        .item-category, .item-size {
+            display: inline-block;
+            margin-right: 1rem;
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .item-status {
+            display: block;
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .item-status.available {
+            color: #2ecc71;
+        }
+
+        .item-status.unavailable {
+            color: #e74c3c;
         }
 
         .login-container {
-            max-width: 400px;
-            margin: 8rem auto;
-            padding: 3rem;
-            background: white;
-            text-align: center;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: #111;
+            color: white;
         }
 
         .login-container h1 {
             font-family: 'Space Grotesk', sans-serif;
-            font-size: 2.5rem;
-            line-height: 1.1;
-            margin-bottom: 3rem;
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 2rem;
             letter-spacing: -0.02em;
+            line-height: 1;
         }
 
         .google-login-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 1rem;
-            background: #111;
-            color: white;
+            background: white;
+            color: #111;
             padding: 1rem 2rem;
+            border-radius: 100px;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
             text-decoration: none;
-            font-size: 0.9rem;
-            letter-spacing: 0.05em;
-            transition: all 0.3s ease;
+            font-weight: 500;
+            transition: transform 0.2s ease;
+        }
+
+        .google-login-btn:hover {
+            transform: scale(1.05);
         }
 
         .login-dot {
-            width: 8px;
-            height: 8px;
-            background: white;
+            width: 10px;
+            height: 10px;
+            background: #4285F4;
             border-radius: 50%;
         }
 
-        @media (max-width: 1024px) {
-            .browse-container {
-                grid-template-columns: 1fr;
-            }
-
-            .filters-sidebar {
-                position: sticky;
-                top: 80px;
-                padding: 2rem;
-            }
-
-            .filter-options {
-                flex-wrap: nowrap;
-                overflow-x: auto;
-                padding-bottom: 0.5rem;
-                -webkit-overflow-scrolling: touch;
-            }
-
-            .filter-chip {
-                flex-shrink: 0;
-            }
+        .no-items {
+            grid-column: 1 / -1;
+            background: white;
+            padding: 3rem;
+            text-align: center;
+            color: #666;
+            border-radius: 4px;
         }
-
-        .scramble-text {
-            cursor: pointer;
-            user-select: none;
-        }
-
+        
+        /* Add the blue styling for the scramble effect */
         .scramble {
             color: #4299e1;
             font-weight: bold;
@@ -451,8 +511,97 @@
         document.querySelectorAll('.filter-chip').forEach(chip => {
             chip.addEventListener('click', () => {
                 chip.classList.toggle('active');
+                applyFilters();
             });
         });
+        
+        // Filter functionality
+        function applyFilters() {
+            // Get selected categories and sizes
+            const selectedCategories = Array.from(document.querySelectorAll('.filter-chip[data-category].active'))
+                .map(chip => chip.getAttribute('data-category').toLowerCase());
+            
+            const selectedSizes = Array.from(document.querySelectorAll('.filter-chip[data-size].active'))
+                .map(chip => chip.getAttribute('data-size'));
+            
+            // Get all item cards
+            const itemCards = document.querySelectorAll('.item-card');
+            
+            // Filter items
+            itemCards.forEach(card => {
+                const category = card.querySelector('.item-category').textContent.toLowerCase();
+                const sizeText = card.querySelector('.item-size').textContent.trim();
+                
+                // Convert size display names to size codes for matching
+                let size;
+                if (sizeText.includes('Extra Small')) size = 'XS';
+                else if (sizeText.includes('Small')) size = 'S';
+                else if (sizeText.includes('Medium')) size = 'M';
+                else if (sizeText.includes('Large') && sizeText.includes('Triple')) size = 'XXXL';
+                else if (sizeText.includes('Large') && sizeText.includes('Double')) size = 'XXL';
+                else if (sizeText.includes('Large') && sizeText.includes('Extra')) size = 'XL';
+                else if (sizeText.includes('Large')) size = 'L';
+                else if (sizeText.includes('One Size')) size = 'OS';
+                else size = sizeText; // Fallback to the text if no match
+                
+                // If no filters selected, show all items
+                if (selectedCategories.length === 0 && selectedSizes.length === 0) {
+                    card.style.display = 'block';
+                    return;
+                }
+                
+                // Check if item matches category filter (if any categories are selected)
+                const matchesCategory = selectedCategories.length === 0 || selectedCategories.some(c => category.includes(c));
+                
+                // Check if item matches size filter (if any sizes are selected)
+                const matchesSize = selectedSizes.length === 0 || selectedSizes.includes(size);
+                
+                // Show item if it matches all active filters
+                if (matchesCategory && matchesSize) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            // Check if any items are visible
+            let hasVisibleItems = false;
+            itemCards.forEach(card => {
+                if (card.style.display !== 'none') {
+                    hasVisibleItems = true;
+                }
+            });
+            
+            const noItemsMessage = document.querySelector('.no-items') || createNoItemsMessage();
+            
+            if (!hasVisibleItems && itemCards.length > 0) {
+                noItemsMessage.style.display = 'block';
+            } else {
+                noItemsMessage.style.display = 'none';
+            }
+        }
+        
+        // Create "no items" message if it doesn't exist
+        function createNoItemsMessage() {
+            const noItems = document.createElement('div');
+            noItems.className = 'no-items';
+            noItems.innerHTML = '<p>No items match the selected filters.</p>';
+            
+            const itemsGrid = document.querySelector('.items-grid');
+            itemsGrid.appendChild(noItems);
+            return noItems;
+        }
+        
+        // Clear filters function
+        function clearFilters() {
+            document.querySelectorAll('.filter-chip.active').forEach(chip => {
+                chip.classList.remove('active');
+            });
+            applyFilters();
+        }
+
+        // Event listener for Clear Filters button
+        document.getElementById('clear-filters').addEventListener('click', clearFilters);
     </script>
 </body>
 </html>
