@@ -27,4 +27,23 @@ class ItemForm(forms.ModelForm):
             'condition': forms.Select(attrs={'class': 'form-control'}),
             'collection': forms.Select(attrs={'class': 'form-control'}),
             'available': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-        } 
+        }
+    
+    def clean_image(self):
+        """
+        Validate the image field.
+        """
+        image = self.cleaned_data.get('image')
+        if image:
+            # Print debug information
+            print(f"Image file received: {image.name}, size: {image.size}, content type: {image.content_type}")
+            
+            # Check if the file is an image
+            if not image.content_type.startswith('image/'):
+                raise forms.ValidationError("File is not an image")
+                
+            # Check file size (10MB limit)
+            if image.size > 10 * 1024 * 1024:
+                raise forms.ValidationError("Image file too large (> 10MB)")
+                
+        return image 
