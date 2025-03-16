@@ -3,7 +3,7 @@ from django.urls import path, include
 from . import views
 from django.views.generic import TemplateView
 from django.contrib.auth.views import LogoutView
-from .views import librarian_page, patron_page, logout_view, add_collection, add_item, item_detail, test_s3_connection, get_presigned_url
+from .views import librarian_page, patron_page, logout_view, add_collection, add_item, item_detail, test_s3_connection, get_presigned_url, test_s3_upload, test_s3_permissions
 
 urlpatterns = [
     # path("", views.index, name="index"),
@@ -26,5 +26,7 @@ urlpatterns = [
     
     # Debug & S3 helpers
     path('test-s3/', test_s3_connection, name='test_s3_connection'),
+    path('test-s3-upload/', test_s3_upload, name='test_s3_upload'),
+    path('test-s3-permissions/', test_s3_permissions, name='test_s3_permissions'),
     path('items/<uuid:item_id>/presigned-url/', get_presigned_url, name='get_presigned_url'),
 ]

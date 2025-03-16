@@ -176,9 +176,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AWS_ACCESS_KEY_ID = "AKIA23WHT2FAVWFBGZBM"
 AWS_SECRET_ACCESS_KEY = "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"
 AWS_STORAGE_BUCKET_NAME = "clothing-lending-images"
-AWS_S3_REGION_NAME = "us-east-1"
+AWS_S3_REGION_NAME = "us-east-2"
 AWS_S3_FILE_OVERWRITE = False
-AWS_DEFAULT_ACL = 'public-read'
+# AWS_DEFAULT_ACL = 'public-read'  # Commented out because the bucket doesn't support ACLs
 AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
 
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'

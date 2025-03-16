@@ -66,10 +66,13 @@
             <div class="items-grid">
                 {% if items %}
                     {% for item in items %}
-                    <div class="item-card">
+                    <div class="item-card" data-item-id="{{ item.id }}">
                         <div class="item-image">
-                            {% if item.image_url %}
-                            <img src="{{ item.image_url }}" alt="{{ item.name }}">
+                            {% if item.s3_image_key %}
+                            <div class="image-container">
+                                <img class="item-img" data-item-id="{{ item.id }}" src="" alt="{{ item.name }}">
+                                <div class="image-loading">Loading...</div>
+                            </div>
                             {% else %}
                             <div class="placeholder-image">No image</div>
                             {% endif %}
@@ -571,6 +574,46 @@
 
         // Event listener for Clear Filters button
         document.getElementById('clear-filters').addEventListener('click', clearFilters);
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get all items with s3_image_key
+            const itemImages = document.querySelectorAll('.item-img[data-item-id]');
+            
+            // For each item, fetch a fresh presigned URL
+            itemImages.forEach(img => {
+                const itemId = img.getAttribute('data-item-id');
+                const loadingElement = img.parentElement.querySelector('.image-loading');
+                
+                fetch(`/lending/items/${itemId}/presigned-url/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Set the image source to the fresh presigned URL
+                            img.src = data.url;
+                            img.onload = function() {
+                                // Hide loading indicator when image loads
+                                if (loadingElement) {
+                                    loadingElement.style.display = 'none';
+                                }
+                                img.style.display = 'block';
+                            };
+                        } else {
+                            console.error('Failed to get presigned URL:', data.error);
+                            if (loadingElement) {
+                                loadingElement.textContent = 'Failed to load image';
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching presigned URL:', error);
+                        if (loadingElement) {
+                            loadingElement.textContent = 'Failed to load image';
+                        }
+                    });
+            });
+        });
     </script>
 </body>
 </html> 

@@ -66,7 +66,7 @@ class Item(models.Model):
     category = models.CharField(max_length=100)
     size = models.CharField(max_length=10, choices=SIZE_CHOICES)
     condition = models.CharField(max_length=20, choices=CONDITION_CHOICES)
-    image_url = models.URLField(blank=True)
+    image_url = models.TextField(blank=True)
     s3_image_key = models.CharField(max_length=255, blank=True)
     collection = models.ForeignKey(Collection, on_delete=models.CASCADE, related_name='items')
     available = models.BooleanField(default=True)

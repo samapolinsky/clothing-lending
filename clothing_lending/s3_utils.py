@@ -15,6 +15,40 @@ def get_s3_client():
         region_name=settings.AWS_S3_REGION_NAME
     )
 
+def check_aws_credentials():
+    """
+    Check if AWS credentials are properly configured.
+    """
+    try:
+        # Print AWS settings for debugging
+        print(f"AWS_ACCESS_KEY_ID: {'*' * len(settings.AWS_ACCESS_KEY_ID)}")
+        print(f"AWS_SECRET_ACCESS_KEY: {'*' * len(settings.AWS_SECRET_ACCESS_KEY)}")
+        print(f"AWS_STORAGE_BUCKET_NAME: {settings.AWS_STORAGE_BUCKET_NAME}")
+        print(f"AWS_S3_REGION_NAME: {settings.AWS_S3_REGION_NAME}")
+        
+        # Try to create an S3 client
+        s3_client = get_s3_client()
+        
+        # Try to list buckets to verify credentials
+        response = s3_client.list_buckets()
+        buckets = [bucket['Name'] for bucket in response['Buckets']]
+        
+        # Check if our bucket exists
+        bucket_exists = settings.AWS_STORAGE_BUCKET_NAME in buckets
+        
+        return {
+            'success': True,
+            'buckets': buckets,
+            'bucket_exists': bucket_exists
+        }
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return {
+            'success': False,
+            'error': str(e)
+        }
+
 def upload_file_to_s3(file_obj, bucket_name=None, object_name=None):
     """
     Upload a file to an S3 bucket and return the URL and key.
@@ -24,6 +58,12 @@ def upload_file_to_s3(file_obj, bucket_name=None, object_name=None):
     :param object_name: S3 object name. If not specified, a UUID is generated.
     :return: Dictionary containing the URL and key of the uploaded file, or None if upload fails
     """
+    # Check AWS credentials first
+    creds_check = check_aws_credentials()
+    if not creds_check['success']:
+        print(f"AWS credentials check failed: {creds_check['error']}")
+        return None
+        
     if bucket_name is None:
         bucket_name = settings.AWS_STORAGE_BUCKET_NAME
         
@@ -38,19 +78,39 @@ def upload_file_to_s3(file_obj, bucket_name=None, object_name=None):
     s3_client = get_s3_client()
     
     try:
-        # Upload the file with explicit ACL
-        extra_args = {
-            'ACL': 'public-read',
-            'ContentType': file_obj.content_type if hasattr(file_obj, 'content_type') else 'application/octet-stream'
-        }
+        # Print debug information
+        print(f"Uploading file: {original_filename}")
+        print(f"Target bucket: {bucket_name}")
+        print(f"Object name: {object_name}")
+        print(f"File content type: {file_obj.content_type if hasattr(file_obj, 'content_type') else 'unknown'}")
+        print(f"File size: {file_obj.size if hasattr(file_obj, 'size') else 'unknown'}")
         
-        s3_client.upload_fileobj(file_obj, bucket_name, object_name, ExtraArgs=extra_args)
+        # Try a different approach - read the file into memory first
+        file_obj.seek(0)  # Reset file position
+        file_content = file_obj.read()  # Read the entire file
+        
+        print(f"Read {len(file_content)} bytes from file")
+        
+        # Upload using put_object instead of upload_fileobj
+        content_type = file_obj.content_type if hasattr(file_obj, 'content_type') else 'application/octet-stream'
+        
+        # Remove the ACL parameter since the bucket doesn't support ACLs
+        response = s3_client.put_object(
+            Bucket=bucket_name,
+            Key=object_name,
+            Body=file_content,
+            ContentType=content_type
+        )
+        
+        print(f"S3 put_object response: {response}")
         
         # Generate temporary signed URL (valid for 1 week) since bucket might have public access blocked
-        url = generate_presigned_url(object_name, bucket_name, expiration=604800)  # 7 days in seconds
+        url = generate_presigned_url(object_key=object_name, bucket_name=bucket_name, expiration=604800)  # 7 days in seconds
+        print(f"Generated presigned URL: {url}")
         
         # Also return the standard URL in case bucket permissions get fixed later
         standard_url = f"https://{bucket_name}.s3.amazonaws.com/{object_name}"
+        print(f"Standard URL: {standard_url}")
         
         return {
             'url': url,
@@ -59,6 +119,14 @@ def upload_file_to_s3(file_obj, bucket_name=None, object_name=None):
         }
     except ClientError as e:
         print(f"Error uploading file to S3: {e}")
+        # Print more detailed error information
+        import traceback
+        traceback.print_exc()
+        return None
+    except Exception as e:
+        print(f"Unexpected error uploading file to S3: {e}")
+        import traceback
+        traceback.print_exc()
         return None
 
 def generate_presigned_url(object_key, bucket_name=None, expiration=3600):
