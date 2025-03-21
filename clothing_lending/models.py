@@ -68,7 +68,7 @@ class Item(models.Model):
     condition = models.CharField(max_length=20, choices=CONDITION_CHOICES)
     image_url = models.TextField(blank=True)
     s3_image_key = models.CharField(max_length=255, blank=True)
-    collection = models.ForeignKey(Collection, on_delete=models.CASCADE, related_name='items')
+    collections = models.ManyToManyField(Collection, related_name='items', blank=True)
     available = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

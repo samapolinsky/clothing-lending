@@ -50,6 +50,7 @@ class ItemAdmin(admin.ModelAdmin):
     list_display = ('name', 'category', 'size', 'condition', 'available', 'created_by', 'created_at', 'updated_at')
     list_filter = ('category', 'size', 'condition', 'available', 'created_by', 'created_at', 'updated_at')
     search_fields = ('name', 'description', 'category')
+    filter_horizontal = ('collections',)  # Add this line to enable many-to-many field in admin
 
 admin.site.register(Librarian)
 admin.site.register(Patron)

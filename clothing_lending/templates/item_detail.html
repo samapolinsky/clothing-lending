@@ -43,7 +43,6 @@
                                             <li><strong>Category:</strong> {{ item.category }}</li>
                                             <li><strong>Size:</strong> {{ item.get_size_display }}</li>
                                             <li><strong>Condition:</strong> {{ item.get_condition_display }}</li>
-                                            <li><strong>Collection:</strong> {{ item.collection.name }}</li>
                                             <li>
                                                 <strong>Status:</strong> 
                                                 {% if item.available %}
@@ -79,6 +78,16 @@
                                     </div>
                                     {% endif %}
                                 </div>
+                                
+                                {% if user.is_authenticated and user.user_type == 1 %}
+                                <hr>
+                                <h5>Add to Collections</h5>
+                                <form method="POST">
+                                    {% csrf_token %}
+                                    {{ form.as_p }}
+                                    <button type="submit" name="add_to_collection" class="btn btn-primary">Add to Collections</button>
+                                </form>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
