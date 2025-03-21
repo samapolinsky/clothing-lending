@@ -1,0 +1,1 @@
+just to have the static directory on the repo
