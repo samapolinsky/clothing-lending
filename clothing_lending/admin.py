@@ -33,12 +33,6 @@ class UserAdmin(BaseUserAdmin):
         return []
 
 
-# Inline for Items within Collection admin
-class ItemInline(admin.TabularInline):
-    model = Item
-    extra = 0
-
-
 # Register the custom UserAdmin
 admin.site.register(User, UserAdmin)
 
@@ -46,13 +40,16 @@ admin.site.register(User, UserAdmin)
 # Register Collection and Item models
 @admin.register(Collection)
 class CollectionAdmin(admin.ModelAdmin):
-    list_display = ('name', 'created_at', 'created_by')
+    list_display = ('name', 'description', 'created_by', 'created_at', 'updated_at')
     search_fields = ('name', 'description')
-    inlines = [ItemInline]
+    list_filter = ('created_by', 'created_at', 'updated_at')
 
 
 @admin.register(Item)
 class ItemAdmin(admin.ModelAdmin):
-    list_display = ('name', 'collection', 'size', 'condition', 'available')
-    list_filter = ('collection', 'size', 'condition', 'available')
+    list_display = ('name', 'category', 'size', 'condition', 'available', 'created_by', 'created_at', 'updated_at')
+    list_filter = ('category', 'size', 'condition', 'available', 'created_by', 'created_at', 'updated_at')
     search_fields = ('name', 'description', 'category')
+
+admin.site.register(Librarian)
+admin.site.register(Patron)

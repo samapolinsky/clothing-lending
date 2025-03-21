@@ -1,7 +1,6 @@
 from django import forms
 from .models import Collection, Item
 
-
 class CollectionForm(forms.ModelForm):
     class Meta:
         model = Collection
@@ -10,7 +9,6 @@ class CollectionForm(forms.ModelForm):
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
         }
-
 
 class ItemForm(forms.ModelForm):
     image = forms.ImageField(required=False, 
@@ -46,4 +44,13 @@ class ItemForm(forms.ModelForm):
             if image.size > 10 * 1024 * 1024:
                 raise forms.ValidationError("Image file too large (> 10MB)")
                 
-        return image 
+        return image
+
+class PromoteUserForm(forms.Form):
+    email = forms.EmailField(widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Enter user email'}))
+
+class AddItemToCollectionForm(forms.Form):
+    collections = forms.ModelMultipleChoiceField(
+        queryset=Collection.objects.all(),
+        widget=forms.SelectMultiple(attrs={'class': 'form-control'})
+    )
