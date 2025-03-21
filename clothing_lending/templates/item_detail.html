@@ -72,6 +72,10 @@
                                     <!-- Librarian actions -->
                                     <div>
                                         <a href="#" class="btn btn-warning">Edit Item</a>
+                                        <form method="POST" action="{% url 'delete_item' item.id %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-danger">Delete Item</button>
+                                        </form>
                                     </div>
                                     {% endif %}
                                 </div>
@@ -115,4 +119,4 @@
     </script>
     {% endif %}
 </body>
-</html> 
+</html>

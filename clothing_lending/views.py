@@ -7,7 +7,7 @@ from django.contrib import messages
 import uuid
 
 from clothing_lending.models import User, Patron, Librarian, Collection, Item
-from clothing_lending.forms import CollectionForm, ItemForm
+from clothing_lending.forms import CollectionForm, ItemForm, PromoteUserForm, AddItemToCollectionForm
 from clothing_lending.s3_utils import upload_file_to_s3, get_s3_client, generate_presigned_url
 
 
@@ -26,43 +26,39 @@ def is_librarian(user):
 
 @user_passes_test(is_librarian)
 def librarian_page(request):
-	try:
-		librarian = Librarian.objects.get(user=request.user)
-		collections = Collection.objects.filter(created_by=librarian)
-		recent_items = Item.objects.filter(created_by=librarian).order_by('-created_at')[:5]
-		
-		context = {
-			'collections': collections,
-			'recent_items': recent_items
-		}
-		
-		return render(request, 'librarian/page.html', context)
-	except Librarian.DoesNotExist:
-		# Create librarian profile if it doesn't exist
-		librarian = Librarian.objects.create(user=request.user)
-		return render(request, 'librarian/page.html', {'collections': [], 'recent_items': []})
+    collections = Collection.objects.all()  # Fetch all collections
+    recent_items = Item.objects.all().order_by('-created_at')  # Fetch all items
+    promote_form = PromoteUserForm()  # Initialize the form
+
+    context = {
+        'collections': collections,
+        'recent_items': recent_items,
+        'form': promote_form  # Add the form to the context
+    }
+
+    return render(request, 'librarian/page.html', context)
 
 def is_patron(user):
 	return user.is_authenticated and user.user_type == 2
 
-# @login_required
-@user_passes_test(is_patron)
-def patron_page(request):
-    """
-    View for the patron dashboard
-    """
-    # Get all available items
-    items = Item.objects.filter(available=True)
+# # @login_required
+# @user_passes_test(is_patron)
+# def patron_page(request):
+#     """
+#     View for the patron dashboard
+#     """
+#     # Get all available items
+#     items = Item.objects.filter(available=True)
     
-    # Get a list of all categories for filtering
-    categories = Item.objects.values_list('category', flat=True).distinct()
+#     # Get a list of all categories for filtering
+#     categories = Item.objects.values_list('category', flat=True).distinct()
     
-    context = {
-        'items': items,
-        'categories': categories
-    }
+#     context = {
+#         'items': items,
+#         'categories': categories
+#     }
     
-    return render(request, 'patron/page.html', context)
+#     return render(request, 'patron/page.html', context)
 
 
 def logout_view(request):
@@ -115,11 +111,15 @@ def browse(request):
 	# Get all available items
 	items = Item.objects.filter(available=True)
 	
+    # Get all collections
+	collections = Collection.objects.all()
+	
 	# Get a list of all categories for filtering
 	categories = Item.objects.values_list('category', flat=True).distinct()
 	
 	context = {
 		'items': items,
+		'collections': collections,
 		'categories': categories
 	}
 	
@@ -145,67 +145,78 @@ def add_collection(request):
 
 @user_passes_test(is_librarian)
 def add_item(request):
-	if request.method == 'POST':
-		form = ItemForm(request.POST, request.FILES)
-		print(f"Form submitted. Files in request: {request.FILES}")
-		if form.is_valid():
-			print("Form is valid")
-			item = form.save(commit=False)
-			librarian = Librarian.objects.get(user=request.user)
-			item.created_by = librarian
-			
-			# Handle image upload to S3
-			if 'image' in request.FILES:
-				print(f"Image found in request.FILES: {request.FILES['image']}")
-				file_obj = request.FILES['image']
-				
-				# Print file details
-				print(f"File name: {file_obj.name}")
-				print(f"File size: {file_obj.size}")
-				print(f"File content type: {file_obj.content_type}")
-				
-				# Try to upload to S3
-				try:
-					s3_upload = upload_file_to_s3(file_obj)
-					if s3_upload:
-						print(f"S3 upload successful: {s3_upload}")
-						item.image_url = s3_upload['url']
-						item.s3_image_key = s3_upload['key']
-					else:
-						print("S3 upload failed - returned None")
-						messages.error(request, "Failed to upload image to S3. Item saved without image.")
-				except Exception as e:
-					print(f"Exception during S3 upload: {e}")
-					import traceback
-					traceback.print_exc()
-					messages.error(request, f"Error uploading image: {str(e)}")
-			else:
-				print("No image in request.FILES")
-			
-			# Save the item
-			try:
-				item.save()
-				print(f"Item saved with ID: {item.id}")
-				print(f"Item image_url: {item.image_url}")
-				print(f"Item s3_image_key: {item.s3_image_key}")
-				messages.success(request, 'Item created successfully!')
-				return redirect('librarian_page')
-			except Exception as e:
-				print(f"Error saving item: {e}")
-				import traceback
-				traceback.print_exc()
-				messages.error(request, f"Error saving item: {str(e)}")
-		else:
-			print(f"Form errors: {form.errors}")
-	else:
-		form = ItemForm()
-	
-	return render(request, 'librarian/add_item.html', {'form': form})
+    if request.method == 'POST':
+        form = ItemForm(request.POST, request.FILES)
+        print(f"Form submitted. Files in request: {request.FILES}")
+        if form.is_valid():
+            print("Form is valid")
+            item = form.save(commit=False)
+            librarian = Librarian.objects.get(user=request.user)
+            item.created_by = librarian
+            
+            # Handle image upload to S3
+            if 'image' in request.FILES:
+                print(f"Image found in request.FILES: {request.FILES['image']}")
+                file_obj = request.FILES['image']
+                
+                # Print file details
+                print(f"File name: {file_obj.name}")
+                print(f"File size: {file_obj.size}")
+                print(f"File content type: {file_obj.content_type}")
+                
+                # Try to upload to S3
+                try:
+                    s3_upload = upload_file_to_s3(file_obj)
+                    if s3_upload:
+                        print(f"S3 upload successful: {s3_upload}")
+                        item.image_url = s3_upload['url']
+                        item.s3_image_key = s3_upload['key']
+                    else:
+                        print("S3 upload failed - returned None")
+                        messages.error(request, "Failed to upload image to S3. Item saved without image.")
+                except Exception as e:
+                    print(f"Exception during S3 upload: {e}")
+                    import traceback
+                    traceback.print_exc()
+                    messages.error(request, f"Error uploading image: {str(e)}")
+            else:
+                print("No image in request.FILES")
+            
+            # Save the item
+            try:
+                item.save()
+                print(f"Item saved with ID: {item.id}")
+                print(f"Item image_url: {item.image_url}")
+                print(f"Item s3_image_key: {item.s3_image_key}")
+                messages.success(request, 'Item created successfully!')
+                return redirect('librarian_page')
+            except Exception as e:
+                print(f"Error saving item: {e}")
+                import traceback
+                traceback.print_exc()
+                messages.error(request, f"Error saving item: {str(e)}")
+        else:
+            print(f"Form errors: {form.errors}")
+    else:
+        form = ItemForm()
+    
+    return render(request, 'librarian/add_item.html', {'form': form})
 
 
 def item_detail(request, item_id):
-	item = get_object_or_404(Item, pk=item_id)
-	return render(request, 'item_detail.html', {'item': item})
+    item = get_object_or_404(Item, pk=item_id)
+    if request.method == 'POST' and 'add_to_collection' in request.POST:
+        form = AddItemToCollectionForm(request.POST)
+        if form.is_valid():
+            collections = form.cleaned_data['collections']
+            for collection in collections:
+                item.collections.add(collection)
+            messages.success(request, 'Item added to selected collections successfully.')
+            return redirect('item_detail', item_id=item_id)
+    else:
+        form = AddItemToCollectionForm()
+
+    return render(request, 'item_detail.html', {'item': item, 'form': form})
 
 
 def test_s3_connection(request):
@@ -229,7 +240,7 @@ def test_s3_connection(request):
         
         # List objects in our bucket (if it exists)
         bucket_objects = []
-        if bucket_exists:
+        if (bucket_exists):
             try:
                 objects = s3_client.list_objects_v2(Bucket=bucket_name, MaxKeys=10)
                 if 'Contents' in objects:
@@ -442,3 +453,40 @@ def test_s3_permissions(request):
             'error': str(e),
             'traceback': traceback.format_exc()
         })
+
+@user_passes_test(is_librarian)
+def promote_user(request):
+    if request.method == 'POST':
+        form = PromoteUserForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            try:
+                user = User.objects.get(email=email)
+                user.user_type = 1  # Set user type to librarian
+                user.save()
+                messages.success(request, f'{user.username} has been promoted to librarian.')
+            except User.DoesNotExist:
+                messages.error(request, 'User with this email does not exist.')
+        else:
+            messages.error(request, 'Invalid email address.')
+    return redirect('librarian_page')
+
+@user_passes_test(is_librarian)
+def delete_item(request, item_id):
+    item = get_object_or_404(Item, pk=item_id)
+    item.delete()
+    messages.success(request, 'Item deleted successfully.')
+    return redirect('librarian_page')
+
+@user_passes_test(is_librarian)
+def collection_detail(request, collection_id):
+    collection = get_object_or_404(Collection, pk=collection_id)
+    items = collection.items.all()
+    return render(request, 'collection_detail.html', {'collection': collection, 'items': items})
+
+@user_passes_test(is_librarian)
+def delete_collection(request, collection_id):
+    collection = get_object_or_404(Collection, pk=collection_id)
+    collection.delete()
+    messages.success(request, 'Collection deleted successfully.')
+    return redirect('librarian_page')

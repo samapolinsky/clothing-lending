@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Browse Items</title>
+    <title>Browse Library</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -15,6 +15,9 @@
                 {% if user.is_authenticated %}
                 <span class="user-info">{{ user.username }}</span>
                 <a href="{% url 'logout' %}" class="logout-btn">Exit</a>
+                {% if user.user_type == 1 %}
+                <a href="{% url 'librarian_page' %}" class="btn btn-primary">Librarian Dashboard</a>
+                {% endif %}
                 {% else %}
                 <a href="{% provider_login_url 'google' %}" class="login-btn">Sign In</a>
                 {% endif %}
@@ -25,31 +28,33 @@
     <div class="browse-container">
         <div class="filters-sidebar">
             <div class="filter-header">
-                <h3>Filter Collection</h3>
+                <h3>Filter Library</h3>
             </div>
             
             <div class="filter-section">
-                <h4>Categories</h4>
-                <div class="filter-options">
-                    {% for category in categories %}
-                    <button class="filter-chip" data-category="{{ category }}">{{ category }}</button>
-                    {% empty %}
-                    <button class="filter-chip" data-category="formal">Formal Wear</button>
-                    <button class="filter-chip" data-category="casual">Casual</button>
-                    <button class="filter-chip" data-category="business">Business</button>
-                    <button class="filter-chip" data-category="accessories">Accessories</button>
-                    {% endfor %}
+                <div class="filter-section">
+                    <h4>Type</h4>
+                    <div class="filter-options">
+                        <button class="filter-chip active" data-type="items">Items</button>
+                        <button class="filter-chip" data-type="collections">Collections</button>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="filter-section">
-                <h4>Size</h4>
-                <div class="filter-options size-grid">
-                    <button class="filter-chip" data-size="XS">XS</button>
-                    <button class="filter-chip" data-size="S">S</button>
-                    <button class="filter-chip" data-size="M">M</button>
-                    <button class="filter-chip" data-size="L">L</button>
-                    <button class="filter-chip" data-size="XL">XL</button>
+                <div id="item-filters">
+                    <h4>Categories</h4>
+                    <div class="filter-options">
+                        {% for category in categories %}
+                        <button class="filter-chip" data-category="{{ category }}">{{ category }}</button>
+                        {% endfor %}
+                    </div>
+                    
+                    <h4>Size</h4>
+                    <div class="filter-options size-grid">
+                        <button class="filter-chip" data-size="XS">XS</button>
+                        <button class="filter-chip" data-size="S">S</button>
+                        <button class="filter-chip" data-size="M">M</button>
+                        <button class="filter-chip" data-size="L">L</button>
+                        <button class="filter-chip" data-size="XL">XL</button>
+                    </div>
                 </div>
             </div>
             
@@ -60,13 +65,13 @@
 
         <div class="main-content">
             <div class="grid-header">
-                <h2>Available Pieces</h2>
+                <h2>Library</h2>
             </div>
             
             <div class="items-grid">
                 {% if items %}
                     {% for item in items %}
-                    <div class="item-card" data-item-id="{{ item.id }}">
+                    <div class="item-card" data-item-id="{{ item.id }}" data-type="item">
                         <div class="item-image">
                             {% if item.s3_image_key %}
                             <div class="image-container">
@@ -93,9 +98,23 @@
                         </div>
                     </div>
                     {% endfor %}
-                {% else %}
+                {% endif %}
+                
+                {% if collections %}
+                    {% for collection in collections %}
+                    <div class="collection-card" data-collection-id="{{ collection.id }}" data-type="collection">
+                        <div class="collection-details">
+                            <h3>{{ collection.name }}</h3>
+                            <p>{{ collection.description }}</p>
+                            <span class="collection-meta">Created by: {{ collection.created_by.user.username }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+                
+                {% if not items and not collections %}
                     <div class="no-items">
-                        <p>No items available at the moment.</p>
+                        <p>No items or collections available at the moment.</p>
                     </div>
                 {% endif %}
             </div>
@@ -480,7 +499,15 @@
         }
 
         // Filter chip toggling
-        document.querySelectorAll('.filter-chip').forEach(chip => {
+        document.querySelectorAll('.filter-chip[data-type]').forEach(chip => {
+            chip.addEventListener('click', () => {
+                document.querySelectorAll('.filter-chip[data-type]').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                applyFilters();
+            });
+        });
+
+        document.querySelectorAll('.filter-chip[data-category], .filter-chip[data-size]').forEach(chip => {
             chip.addEventListener('click', () => {
                 chip.classList.toggle('active');
                 applyFilters();
@@ -489,15 +516,25 @@
         
         // Filter functionality
         function applyFilters() {
-            // Get selected categories and sizes
+            // Get selected types, categories, and sizes
+            const selectedTypes = Array.from(document.querySelectorAll('.filter-chip[data-type].active'))
+                .map(chip => chip.getAttribute('data-type'));
             const selectedCategories = Array.from(document.querySelectorAll('.filter-chip[data-category].active'))
                 .map(chip => chip.getAttribute('data-category').toLowerCase());
-            
             const selectedSizes = Array.from(document.querySelectorAll('.filter-chip[data-size].active'))
                 .map(chip => chip.getAttribute('data-size'));
             
-            // Get all item cards
+            // Show or hide item filters based on selected type
+            const itemFilters = document.getElementById('item-filters');
+            if (selectedTypes.includes('items')) {
+                itemFilters.style.display = 'block';
+            } else {
+                itemFilters.style.display = 'none';
+            }
+            
+            // Get all item and collection cards
             const itemCards = document.querySelectorAll('.item-card');
+            const collectionCards = document.querySelectorAll('.collection-card');
             
             // Filter items
             itemCards.forEach(card => {
@@ -516,11 +553,8 @@
                 else if (sizeText.includes('One Size')) size = 'OS';
                 else size = sizeText; // Fallback to the text if no match
                 
-                // If no filters selected, show all items
-                if (selectedCategories.length === 0 && selectedSizes.length === 0) {
-                    card.style.display = 'block';
-                    return;
-                }
+                // Check if item matches type filter
+                const matchesType = selectedTypes.length === 0 || selectedTypes.includes('items');
                 
                 // Check if item matches category filter (if any categories are selected)
                 const matchesCategory = selectedCategories.length === 0 || selectedCategories.some(c => category.includes(c));
@@ -529,16 +563,34 @@
                 const matchesSize = selectedSizes.length === 0 || selectedSizes.includes(size);
                 
                 // Show item if it matches all active filters
-                if (matchesCategory && matchesSize) {
+                if (matchesType && matchesCategory && matchesSize) {
                     card.style.display = 'block';
                 } else {
                     card.style.display = 'none';
                 }
             });
             
-            // Check if any items are visible
+            // Filter collections
+            collectionCards.forEach(card => {
+                // Check if collection matches type filter
+                const matchesType = selectedTypes.length === 0 || selectedTypes.includes('collections');
+                
+                // Show collection if it matches the type filter
+                if (matchesType) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            // Check if any items or collections are visible
             let hasVisibleItems = false;
             itemCards.forEach(card => {
+                if (card.style.display !== 'none') {
+                    hasVisibleItems = true;
+                }
+            });
+            collectionCards.forEach(card => {
                 if (card.style.display !== 'none') {
                     hasVisibleItems = true;
                 }
@@ -546,7 +598,7 @@
             
             const noItemsMessage = document.querySelector('.no-items') || createNoItemsMessage();
             
-            if (!hasVisibleItems && itemCards.length > 0) {
+            if (!hasVisibleItems && (itemCards.length > 0 || collectionCards.length > 0)) {
                 noItemsMessage.style.display = 'block';
             } else {
                 noItemsMessage.style.display = 'none';
@@ -569,11 +621,15 @@
             document.querySelectorAll('.filter-chip.active').forEach(chip => {
                 chip.classList.remove('active');
             });
+            document.querySelector('.filter-chip[data-type="items"]').classList.add('active');
             applyFilters();
         }
 
         // Event listener for Clear Filters button
         document.getElementById('clear-filters').addEventListener('click', clearFilters);
+
+        // Apply initial filters
+        applyFilters();
     </script>
 
     <script>
@@ -616,4 +672,4 @@
         });
     </script>
 </body>
-</html> 
+</html>
