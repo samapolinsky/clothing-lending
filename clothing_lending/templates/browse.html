@@ -17,6 +17,8 @@
                 <a href="{% url 'logout' %}" class="logout-btn">Exit</a>
                 {% if user.user_type == 1 %}
                 <a href="{% url 'librarian_page' %}" class="btn btn-primary">Librarian Dashboard</a>
+                {% elif user.user_type == 2 %}
+                <a href="{% url 'patron_page' %}" class="btn btn-primary">Patron Dashboard</a>
                 {% endif %}
                 {% else %}
                 <a href="{% provider_login_url 'google' %}" class="login-btn">Sign In</a>

@@ -131,12 +131,7 @@ def add_collection(request):
         form = CollectionForm(request.POST)
         if form.is_valid():
             collection = form.save(commit=False)
-            if request.user.user_type == 1:  # Librarian
-                librarian = Librarian.objects.get(user=request.user)
-                collection.created_by = librarian
-            elif request.user.user_type == 2:  # Patron
-                patron = Patron.objects.get(user=request.user)
-                collection.created_by = patron
+            collection.created_by = request.user
             collection.save()
             messages.success(request, 'Collection created successfully!')
             if request.user.user_type == 1:
