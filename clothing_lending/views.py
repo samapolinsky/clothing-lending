@@ -500,7 +500,7 @@ def delete_collection(request, collection_id):
 
 @user_passes_test(is_patron)
 def patron_page(request):
-    collections = Collection.objects.filter(created_by__user=request.user)  # Fetch collections created by the patron
+    collections = Collection.objects.filter(created_by=request.user)  # Fetch collections created by the patron
 
     context = {
         'collections': collections,

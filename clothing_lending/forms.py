@@ -55,7 +55,7 @@ class AddItemToCollectionForm(forms.Form):
             if user.user_type == 1:  # Librarian
                 self.fields['collections'].queryset = Collection.objects.all()
             elif user.user_type == 2:  # Patron
-                self.fields['collections'].queryset = Collection.objects.filter(created_by__user=user)
+                self.fields['collections'].queryset = Collection.objects.filter(created_by=user)
 
     collections = forms.ModelMultipleChoiceField(
         queryset=Collection.objects.none(),
