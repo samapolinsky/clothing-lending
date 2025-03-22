@@ -3,7 +3,7 @@ from django.urls import path, include
 from . import views
 from django.views.generic import TemplateView
 from django.contrib.auth.views import LogoutView
-from .views import librarian_page, logout_view, add_collection, add_item, item_detail, test_s3_connection, get_presigned_url, test_s3_upload, test_s3_permissions, promote_user, delete_item, collection_detail, delete_collection
+from .views import librarian_page, patron_page, logout_view, add_collection, add_item, item_detail, test_s3_connection, get_presigned_url, test_s3_upload, test_s3_permissions, promote_user, delete_item, collection_detail, delete_collection
 
 urlpatterns = [
     # path("", views.index, name="index"),
@@ -13,7 +13,7 @@ urlpatterns = [
     path("catalog/", views.catalog, name="catalog"),
     path("checkout/", views.checkout, name="checkout"),
     path('librarian/page/', librarian_page, name='librarian_page'),
-    # path('patron/page/', patron_page, name='patron_page'),
+    path('patron/page/', patron_page, name='patron_page'),
     path('accounts/logout/', logout_view, name='logout'),
     path('browse/', views.browse, name='browse'),
     
@@ -21,6 +21,7 @@ urlpatterns = [
     path('librarian/collections/add/', add_collection, name='add_collection'),
     path('collections/<uuid:collection_id>/', collection_detail, name='collection_detail'),
     path('collections/<uuid:collection_id>/delete/', delete_collection, name='delete_collection'),
+    path('patron/collections/add/', add_collection, name='add_collection'),  # Allow patrons to add collections
     
     # Item management
     path('librarian/items/add/', add_item, name='add_item'),
