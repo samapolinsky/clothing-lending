@@ -102,13 +102,13 @@
                 
                 {% if collections %}
                     {% for collection in collections %}
-                    <div class="collection-card" data-collection-id="{{ collection.id }}" data-type="collection">
+                    <a href="{% url 'collection_detail' collection.id %}" class="collection-card" data-collection-id="{{ collection.id }}" data-type="collection">
                         <div class="collection-details">
                             <h3>{{ collection.name }}</h3>
                             <p>{{ collection.description }}</p>
                             <span class="collection-meta">Created by: {{ collection.created_by.user.username }}</span>
                         </div>
-                    </div>
+                    </a>
                     {% endfor %}
                 {% endif %}
                 

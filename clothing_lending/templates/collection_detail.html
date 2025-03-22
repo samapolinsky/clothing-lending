@@ -23,11 +23,17 @@
                         <h2 class="card-title">{{ collection.name }}</h2>
                         <p class="card-text">{{ collection.description }}</p>
                         <div class="d-flex justify-content-between">
+                            {% if user.is_authenticated and user.user_type == 1 %}
                             <a href="{% url 'librarian_page' %}" class="btn btn-secondary">Back to Dashboard</a>
+                            {% else %}
+                            <a href="{% url 'browse' %}" class="btn btn-secondary">Back to Browse</a>
+                            {% endif %}
+                            {% if user.is_authenticated and user.user_type == 1 %}
                             <form method="POST" action="{% url 'delete_collection' collection.id %}" class="d-inline">
                                 {% csrf_token %}
                                 <button type="submit" class="btn btn-danger">Delete Collection</button>
                             </form>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

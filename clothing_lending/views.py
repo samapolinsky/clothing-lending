@@ -478,7 +478,6 @@ def delete_item(request, item_id):
     messages.success(request, 'Item deleted successfully.')
     return redirect('librarian_page')
 
-@user_passes_test(is_librarian)
 def collection_detail(request, collection_id):
     collection = get_object_or_404(Collection, pk=collection_id)
     items = collection.items.all()
