@@ -126,21 +126,27 @@ def browse(request):
 	return render(request, 'browse.html', context)
 
 
-@user_passes_test(is_librarian)
 def add_collection(request):
-	if request.method == 'POST':
-		form = CollectionForm(request.POST)
-		if form.is_valid():
-			collection = form.save(commit=False)
-			librarian = Librarian.objects.get(user=request.user)
-			collection.created_by = librarian
-			collection.save()
-			messages.success(request, 'Collection created successfully!')
-			return redirect('librarian_page')
-	else:
-		form = CollectionForm()
-	
-	return render(request, 'librarian/add_collection.html', {'form': form})
+    if request.method == 'POST':
+        form = CollectionForm(request.POST)
+        if form.is_valid():
+            collection = form.save(commit=False)
+            if request.user.user_type == 1:  # Librarian
+                librarian = Librarian.objects.get(user=request.user)
+                collection.created_by = librarian
+            elif request.user.user_type == 2:  # Patron
+                patron = Patron.objects.get(user=request.user)
+                collection.created_by = patron
+            collection.save()
+            messages.success(request, 'Collection created successfully!')
+            if request.user.user_type == 1:
+                return redirect('librarian_page')
+            elif request.user.user_type == 2:
+                return redirect('patron_page')
+    else:
+        form = CollectionForm()
+    
+    return render(request, 'librarian/add_collection.html', {'form': form})
 
 
 @user_passes_test(is_librarian)
@@ -206,7 +212,7 @@ def add_item(request):
 def item_detail(request, item_id):
     item = get_object_or_404(Item, pk=item_id)
     if request.method == 'POST' and 'add_to_collection' in request.POST:
-        form = AddItemToCollectionForm(request.POST)
+        form = AddItemToCollectionForm(request.POST, user=request.user)
         if form.is_valid():
             collections = form.cleaned_data['collections']
             for collection in collections:
@@ -214,7 +220,7 @@ def item_detail(request, item_id):
             messages.success(request, 'Item added to selected collections successfully.')
             return redirect('item_detail', item_id=item_id)
     else:
-        form = AddItemToCollectionForm()
+        form = AddItemToCollectionForm(user=request.user)
 
     return render(request, 'item_detail.html', {'item': item, 'form': form})
 
@@ -462,9 +468,16 @@ def promote_user(request):
             email = form.cleaned_data['email']
             try:
                 user = User.objects.get(email=email)
-                user.user_type = 1  # Set user type to librarian
-                user.save()
-                messages.success(request, f'{user.username} has been promoted to librarian.')
+                if user.user_type == 2:  # If the user is a patron
+                    user.user_type = 1  # Promote to librarian
+                    user.save()
+                    # Create a Librarian instance if it doesn't exist
+                    Librarian.objects.get_or_create(user=user)
+                    # Delete the Patron instance if it exists
+                    Patron.objects.filter(user=user).delete()
+                    messages.success(request, f'{user.username} has been promoted to librarian.')
+                else:
+                    messages.info(request, f'{user.username} is already a librarian.')
             except User.DoesNotExist:
                 messages.error(request, 'User with this email does not exist.')
         else:
@@ -478,7 +491,6 @@ def delete_item(request, item_id):
     messages.success(request, 'Item deleted successfully.')
     return redirect('librarian_page')
 
-@user_passes_test(is_librarian)
 def collection_detail(request, collection_id):
     collection = get_object_or_404(Collection, pk=collection_id)
     items = collection.items.all()
@@ -490,3 +502,13 @@ def delete_collection(request, collection_id):
     collection.delete()
     messages.success(request, 'Collection deleted successfully.')
     return redirect('librarian_page')
+
+@user_passes_test(is_patron)
+def patron_page(request):
+    collections = Collection.objects.filter(created_by__user=request.user)  # Fetch collections created by the patron
+
+    context = {
+        'collections': collections,
+    }
+
+    return render(request, 'patron/page.html', context)

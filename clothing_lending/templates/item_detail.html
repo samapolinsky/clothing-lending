@@ -51,6 +51,15 @@
                                                 <span class="badge bg-danger">Not Available</span>
                                                 {% endif %}
                                             </li>
+                                            <li><strong>Collections:</strong>
+                                                <ul>
+                                                    {% for collection in item.collections.all %}
+                                                    <li>{{ collection.name }}</li>
+                                                    {% empty %}
+                                                    <li>No collections</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </li>
                                         </ul>
                                     </div>
                                 </div>

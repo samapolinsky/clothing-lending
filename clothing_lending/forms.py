@@ -48,7 +48,16 @@ class PromoteUserForm(forms.Form):
     email = forms.EmailField(widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Enter user email'}))
 
 class AddItemToCollectionForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super(AddItemToCollectionForm, self).__init__(*args, **kwargs)
+        if user:
+            if user.user_type == 1:  # Librarian
+                self.fields['collections'].queryset = Collection.objects.all()
+            elif user.user_type == 2:  # Patron
+                self.fields['collections'].queryset = Collection.objects.filter(created_by__user=user)
+
     collections = forms.ModelMultipleChoiceField(
-        queryset=Collection.objects.all(),
+        queryset=Collection.objects.none(),
         widget=forms.SelectMultiple(attrs={'class': 'form-control'})
     )
