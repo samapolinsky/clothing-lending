@@ -54,7 +54,7 @@
                             {% else %}
                             <div class="placeholder-image">No image</div>
                             {% endif %}
-                            
+
                             {% if item.available %}
                             <a href="{% url 'item_detail' item.id %}" class="borrow-btn">View Details</a>
                             {% endif %}
@@ -76,5 +76,105 @@
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <style>
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+        .item-card {
+            background: white;
+            transition: all 0.3s ease;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .item-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .item-image {
+            height: 320px;
+            position: relative;
+            overflow: hidden;
+        }
+        .item-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: scale-down;
+            transition: transform 0.5s ease;
+        }
+        .item-details {
+            padding: 1.5rem;
+        }
+        .item-meta h3 {
+            margin: 0 0 0.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        .borrow-btn {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.75);
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            text-decoration: none;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .item-card:hover .borrow-btn {
+            opacity: 1;
+        }
+        .item-card:hover .item-image img {
+            transform: scale(1.05);
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get all items with s3_image_key
+            const itemImages = document.querySelectorAll('.item-img[data-item-id]');
+
+            // For each item, fetch a fresh presigned URL
+            itemImages.forEach(img => {
+                const itemId = img.getAttribute('data-item-id');
+                const loadingElement = img.parentElement.querySelector('.image-loading');
+
+                fetch(`/lending/items/${itemId}/presigned-url/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Set the image source to the fresh presigned URL
+                            img.src = data.url;
+                            img.onload = function() {
+                                // Hide loading indicator when image loads
+                                if (loadingElement) {
+                                    loadingElement.style.display = 'none';
+                                }
+                                img.style.display = 'block';
+                            };
+                        } else {
+                            console.error('Failed to get presigned URL:', data.error);
+                            if (loadingElement) {
+                                loadingElement.textContent = 'Failed to load image';
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching presigned URL:', error);
+                        if (loadingElement) {
+                            loadingElement.textContent = 'Failed to load image';
+                        }
+                    });
+            });
+        });
+    </script>
 </body>
 </html>
