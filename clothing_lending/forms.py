@@ -51,11 +51,14 @@ class AddItemToCollectionForm(forms.Form):
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
         super(AddItemToCollectionForm, self).__init__(*args, **kwargs)
-        if user:
+        if user and user.is_authenticated:
             if user.user_type == 1:  # Librarian
                 self.fields['collections'].queryset = Collection.objects.all()
             elif user.user_type == 2:  # Patron
                 self.fields['collections'].queryset = Collection.objects.filter(created_by=user)
+        else:
+            self.fields['collections'].queryset = Collection.objects.filter(is_private=False)
+
 
     collections = forms.ModelMultipleChoiceField(
         queryset=Collection.objects.none(),
