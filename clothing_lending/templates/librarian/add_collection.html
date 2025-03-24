@@ -48,7 +48,11 @@
                             
                             <div class="d-flex justify-content-between">
                                 <button type="submit" class="btn btn-primary">Create Collection</button>
-                                <a href="{% url 'librarian_page' %}" class="btn btn-secondary">Back to Dashboard</a>
+                                {% if user.is_authenticated and user.user_type == 1 %}
+                                    <a href="{% url 'librarian_page' %}" class="btn btn-secondary">Back to Dashboard</a>
+                                {% elif user.is_authenticated and user.user_type == 2 %}
+                                    <a href="{% url 'patron_page' %}" class="btn btn-secondary">Back to Dashboard</a>
+                                {% endif %}
                             </div>
                         </form>
                     </div>
