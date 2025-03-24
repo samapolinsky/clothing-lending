@@ -43,7 +43,6 @@
                                             <li><strong>Category:</strong> {{ item.category }}</li>
                                             <li><strong>Size:</strong> {{ item.get_size_display }}</li>
                                             <li><strong>Condition:</strong> {{ item.get_condition_display }}</li>
-                                            <li><strong>Collection:</strong> {{ item.collection.name }}</li>
                                             <li>
                                                 <strong>Status:</strong> 
                                                 {% if item.available %}
@@ -51,6 +50,15 @@
                                                 {% else %}
                                                 <span class="badge bg-danger">Not Available</span>
                                                 {% endif %}
+                                            </li>
+                                            <li><strong>Collections:</strong>
+                                                <ul>
+                                                    {% for collection in item.collections.all %}
+                                                    <li>{{ collection.name }}</li>
+                                                    {% empty %}
+                                                    <li>No collections</li>
+                                                    {% endfor %}
+                                                </ul>
                                             </li>
                                         </ul>
                                     </div>
@@ -72,9 +80,23 @@
                                     <!-- Librarian actions -->
                                     <div>
                                         <a href="#" class="btn btn-warning">Edit Item</a>
+                                        <form method="POST" action="{% url 'delete_item' item.id %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-danger">Delete Item</button>
+                                        </form>
                                     </div>
                                     {% endif %}
                                 </div>
+                                
+                                {% if user.is_authenticated %}
+                                <hr>
+                                <h5>Add to Collections</h5>
+                                <form method="POST">
+                                    {% csrf_token %}
+                                    {{ form.as_p }}
+                                    <button type="submit" name="add_to_collection" class="btn btn-primary">Add to Collections</button>
+                                </form>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -115,4 +137,4 @@
     </script>
     {% endif %}
 </body>
-</html> 
+</html>

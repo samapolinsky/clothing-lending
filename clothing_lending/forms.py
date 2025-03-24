@@ -1,7 +1,6 @@
 from django import forms
 from .models import Collection, Item
 
-
 class CollectionForm(forms.ModelForm):
     class Meta:
         model = Collection
@@ -11,21 +10,18 @@ class CollectionForm(forms.ModelForm):
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
         }
 
-
 class ItemForm(forms.ModelForm):
-    image = forms.ImageField(required=False, 
-                           widget=forms.FileInput(attrs={'class': 'form-control'}))
+    image = forms.ImageField(required=False, widget=forms.FileInput(attrs={'class': 'form-control'}))
     
     class Meta:
         model = Item
-        fields = ['name', 'description', 'category', 'size', 'condition', 'collection', 'available']
+        fields = ['name', 'description', 'category', 'size', 'condition', 'available']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
             'category': forms.TextInput(attrs={'class': 'form-control'}),
             'size': forms.Select(attrs={'class': 'form-control'}),
             'condition': forms.Select(attrs={'class': 'form-control'}),
-            'collection': forms.Select(attrs={'class': 'form-control'}),
             'available': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
     
@@ -46,4 +42,22 @@ class ItemForm(forms.ModelForm):
             if image.size > 10 * 1024 * 1024:
                 raise forms.ValidationError("Image file too large (> 10MB)")
                 
-        return image 
+        return image
+
+class PromoteUserForm(forms.Form):
+    email = forms.EmailField(widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Enter user email'}))
+
+class AddItemToCollectionForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super(AddItemToCollectionForm, self).__init__(*args, **kwargs)
+        if user:
+            if user.user_type == 1:  # Librarian
+                self.fields['collections'].queryset = Collection.objects.all()
+            elif user.user_type == 2:  # Patron
+                self.fields['collections'].queryset = Collection.objects.filter(created_by=user)
+
+    collections = forms.ModelMultipleChoiceField(
+        queryset=Collection.objects.none(),
+        widget=forms.SelectMultiple(attrs={'class': 'form-control'})
+    )

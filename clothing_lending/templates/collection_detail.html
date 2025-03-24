@@ -1,0 +1,80 @@
+{% load socialaccount %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ collection.name }} - Detail</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-10 offset-md-1">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'browse' %}">Browse</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">{{ collection.name }}</li>
+                    </ol>
+                </nav>
+                
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h2 class="card-title">{{ collection.name }}</h2>
+                        <p class="card-text">{{ collection.description }}</p>
+                        <div class="d-flex justify-content-between">
+                            {% if user.is_authenticated and user.user_type == 1 %}
+                            <a href="{% url 'librarian_page' %}" class="btn btn-secondary">Back to Dashboard</a>
+                            {% else %}
+                            <a href="{% url 'browse' %}" class="btn btn-secondary">Back to Browse</a>
+                            {% endif %}
+                            {% if user.is_authenticated and user.user_type == 1 %}
+                            <form method="POST" action="{% url 'delete_collection' collection.id %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger">Delete Collection</button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid-header">
+                    <h2>Items in {{ collection.name }}</h2>
+                </div>
+                
+                <div class="items-grid">
+                    {% for item in items %}
+                    <div class="item-card" data-item-id="{{ item.id }}">
+                        <div class="item-image">
+                            {% if item.s3_image_key %}
+                            <div class="image-container">
+                                <img class="item-img" data-item-id="{{ item.id }}" src="" alt="{{ item.name }}">
+                                <div class="image-loading">Loading...</div>
+                            </div>
+                            {% else %}
+                            <div class="placeholder-image">No image</div>
+                            {% endif %}
+                            
+                            {% if item.available %}
+                            <a href="{% url 'item_detail' item.id %}" class="borrow-btn">View Details</a>
+                            {% endif %}
+                        </div>
+                        <div class="item-details">
+                            <div class="item-meta">
+                                <h3>{{ item.name }}</h3>
+                                <span class="item-category">{{ item.category }}</span>
+                                <span class="item-size">{{ item.get_size_display }}</span>
+                                <span class="item-status {% if item.available %}available{% else %}unavailable{% endif %}">
+                                    {{ item.available|yesno:"Available,Unavailable" }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
