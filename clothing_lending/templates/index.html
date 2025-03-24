@@ -1,18 +1,76 @@
 {% load socialaccount %}
-<html>
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Login - Clothing Lending</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #f8f9fa;
+      font-family: 'Inter', sans-serif;
+    }
+    .login-container {
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 1.5rem;
+    }
+    .login-btn, .logout-btn {
+      display: block;
+      margin: 10px 0;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 5px;
+      text-decoration: none;
+      font-size: 1rem;
+      background: black;
+      color: white;
+      transition: 0.3s;
+    }
+    .btn {
+      display: block;
+      margin: 10px 0;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 5px;
+      text-decoration: none;
+      font-size: 1rem;
+      background: black;
+      color: white;
+      transition: 0.3s;
+    }
+    .login-btn:hover, .btn:hover, .logout-btn:hover {
+      background: grey;
+    }
+  </style>
+</head>
+
+<html lang="en">
 <body>
-<h1>Clothing Lending Login</h1>
-{% if user.is_authenticated %}
-  <p>Welcome, You are logged in as {{ user.username }}</p>
-{% else %}
-  <a href="{% provider_login_url 'google' %}">Login With Google</a>
-  <a href="{% url 'browse' %}">Continue as Anonymous User</a>
-{% endif %}
-{% if user.is_authenticated and user.user_type == 1 %}
-  <a href="{% url 'librarian_page' %}">Go to Librarian Dashboard</a>
-{% elif user.is_authenticated and user.user_type == 2 %}
-  <a href="{% url 'browse' %}">Go to Patron Profile</a>
-{% endif %}
-<a href="{% url 'logout' %}">Logout</a>
+<header>
+  <div class="login-container">
+    <h1>Clothing Lending App<br></h1>
+    {% if user.is_authenticated %}
+      <span class="user-info">{{ user.username }}</span>
+      <a href="{% url 'logout' %}" class="logout-btn">Logout</a>
+      {% if user.user_type == 1 %}
+        <a href="{% url 'librarian_page' %}" class="btn">Librarian Dashboard</a>
+      {% elif user.user_type == 2 %}
+        <a href="{% url 'patron_page' %}" class="btn">Patron Dashboard</a>
+      {% endif %}
+    {% else %}
+      <a href="{% provider_login_url 'google' %}" class="login-btn">Login with Google</a>
+      <a href="{% url 'browse' %}" class="login-btn">Continue as Anonymous User</a>
+    {% endif %}
+  </div>
+</header>
 </body>
 </html>
