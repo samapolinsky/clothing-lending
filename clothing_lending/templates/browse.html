@@ -104,13 +104,13 @@
                 
                 {% if collections %}
                     {% for collection in collections %}
-                    <a href="{% url 'collection_detail' collection.id %}" class="collection-card" data-collection-id="{{ collection.id }}" data-type="collection">
+                    <div class="card collection-card" data-collection-id="{{ collection.id }}" data-type="collection">
                         <div class="collection-details">
-                            <h3>{{ collection.name }}</h3>
-                            <p>{{ collection.description }}</p>
+                            <h3><a href="{% url 'collection_detail' collection.id %}">{{ collection.name }}</a></h3>
+                            <p class="card-text">{{ collection.description }}</p>
                             <span class="collection-meta">Created by: {{ collection.created_by.email}}</span>
                         </div>
-                    </a>
+                    </div>
                     {% endfor %}
                 {% endif %}
                 
@@ -316,7 +316,24 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
+        .collection-card {
+            background: white;
+            transition: all 0.3s ease;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .collection-details {
+            padding: 1.0rem;
+        }
+
         .item-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .collection-card:hover {
             transform: translateY(-4px);
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
@@ -377,6 +394,11 @@
             margin: 0 0 0.5rem;
             font-size: 1.1rem;
             font-weight: 600;
+        }
+
+        .collection-meta {
+            font-size: 0.8rem;
+            color: grey;
         }
 
         .item-category, .item-size {
