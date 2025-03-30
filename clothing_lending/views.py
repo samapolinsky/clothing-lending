@@ -538,9 +538,6 @@ def update_patron_profile(request):
         form = PatronProfileForm(request.POST, request.FILES, instance=patron)
         if form.is_valid():
             form.save()
-            # here to check if stuff actually is saved
-            print("Uploaded file name:", patron.profile_picture.name)
-            print("Generated file URL:", patron.profile_picture.url)
             messages.success(request, "Profile updated successfully!")
             return redirect('patron_page')
     else:
