@@ -7,7 +7,7 @@ from django.contrib import messages
 import uuid
 
 from clothing_lending.models import User, Patron, Librarian, Collection, Item
-from clothing_lending.forms import CollectionForm, ItemForm, PromoteUserForm, AddItemToCollectionForm
+from clothing_lending.forms import CollectionForm, ItemForm, PromoteUserForm, AddItemToCollectionForm, PatronProfileForm
 from clothing_lending.s3_utils import upload_file_to_s3, get_s3_client, generate_presigned_url
 
 
@@ -522,10 +522,24 @@ def delete_collection(request, collection_id):
 
 @user_passes_test(is_patron)
 def patron_page(request):
+    patron, created = Patron.objects.get_or_create(user=request.user)
     collections = Collection.objects.filter(created_by=request.user)  # Fetch collections created by the patron
 
     context = {
         'collections': collections,
+        'patron': patron,
     }
 
     return render(request, 'patron/page.html', context)
+
+def update_patron_profile(request):
+    patron, created = Patron.objects.get_or_create(user=request.user)
+    if request.method == 'POST':
+        form = PatronProfileForm(request.POST, request.FILES, instance=patron)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profile updated successfully!")
+            return redirect('patron_page')
+    else:
+        form = PatronProfileForm(instance=patron)
+    return render(request, 'patron/update_profile.html', {'form': form})

@@ -1,5 +1,5 @@
 from django import forms
-from .models import Collection, Item
+from .models import Collection, Item, Patron
 
 class CollectionForm(forms.ModelForm):
     class Meta:
@@ -64,3 +64,12 @@ class AddItemToCollectionForm(forms.Form):
         queryset=Collection.objects.none(),
         widget=forms.SelectMultiple(attrs={'class': 'form-control'})
     )
+
+class PatronProfileForm(forms.ModelForm):
+    class Meta:
+        model = Patron
+        fields = ['custom_username', 'profile_picture']
+        widgets = {
+            'custom_username': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter your display name'}),
+            'profile_picture': forms.FileInput(attrs={'class': 'form-control'}),
+        }
