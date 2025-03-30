@@ -39,4 +39,5 @@ urlpatterns = [
 	
     # Update Patron profile
     path('patron/update-profile/', update_patron_profile, name='update_patron_profile'),
+	path('patron/remove-profile-picture/', views.remove_profile_picture, name='remove_profile_picture'),
 ]

@@ -542,4 +542,19 @@ def update_patron_profile(request):
             return redirect('patron_page')
     else:
         form = PatronProfileForm(instance=patron)
-    return render(request, 'patron/update_profile.html', {'form': form})
+
+    context = {'form': form, 'patron': patron}
+    return render(request, 'patron/update_profile.html', context)
+
+@user_passes_test(is_patron)
+def remove_profile_picture(request):
+    patron, created = Patron.objects.get_or_create(user=request.user)
+    if patron.profile_picture:
+        # Optionally, delete the file from storage:
+        patron.profile_picture.delete(save=False)
+        patron.profile_picture = None
+        patron.save()
+        messages.success(request, "Profile picture removed successfully.")
+    else:
+        messages.info(request, "No profile picture to remove.")
+    return redirect('update_patron_profile')
