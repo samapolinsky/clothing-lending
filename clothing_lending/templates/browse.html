@@ -13,15 +13,21 @@
             <h1 class="scramble-text">AIRDROBE<br></h1>
             <nav>
                 {% if user.is_authenticated %}
-                <span class="user-info">{{ user.username }}</span>
-                <a href="{% url 'logout' %}" class="logout-btn">Exit</a>
-                {% if user.user_type == 1 %}
-                <a href="{% url 'librarian_page' %}" class="btn btn-primary">Librarian Dashboard</a>
-                {% elif user.user_type == 2 %}
-                <a href="{% url 'patron_page' %}" class="btn btn-primary">Patron Dashboard</a>
-                {% endif %}
+                    {% if user.user_type == 2 %}
+                        {% with patron=user.patron %}
+                            <span class="user-info">
+                                {{ patron.custom_username|default:user.username }}
+                            </span>
+                            <a href="{% url 'logout' %}" class="logout-btn">Exit</a>
+                            <a href="{% url 'patron_page' %}" class="btn btn-primary">Patron Dashboard</a>
+                        {% endwith %}
+                    {% elif user.user_type == 1 %}
+                        <span class="user-info">{{ user.username }}</span>
+                        <a href="{% url 'logout' %}" class="logout-btn">Exit</a>
+                        <a href="{% url 'librarian_page' %}" class="btn btn-primary">Librarian Dashboard</a>
+                    {% endif %}
                 {% else %}
-                <a href="{% provider_login_url 'google' %}" class="login-btn">Sign In</a>
+                    <a href="{% provider_login_url 'google' %}" class="login-btn">Sign In</a>
                 {% endif %}
             </nav>
         </div>
