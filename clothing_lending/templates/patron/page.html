@@ -41,6 +41,10 @@
                 </div>
             </div>
 
+            <div class="mb-4">
+                <a href="{% url 'browse' %}" class="btn btn-primary">Back to Browse</a>
+            </div>
+
             {% if messages %}
                 <div class="alert alert-info">
                     {% for message in messages %}
