@@ -3,7 +3,7 @@ from django.urls import path, include
 from . import views
 from django.views.generic import TemplateView
 from django.contrib.auth.views import LogoutView
-from .views import librarian_page, patron_page, logout_view, add_collection, add_item, item_detail, test_s3_connection, get_presigned_url, test_s3_upload, test_s3_permissions, promote_user, delete_item, collection_detail, delete_collection
+from .views import librarian_page, patron_page, logout_view, add_collection, add_item, item_detail, test_s3_connection, get_presigned_url, test_s3_upload, test_s3_permissions, promote_user, delete_item, collection_detail, delete_collection, update_patron_profile
 
 urlpatterns = [
     # path("", views.index, name="index"),
@@ -36,4 +36,8 @@ urlpatterns = [
 
     # Promote user to librarian
     path('librarian/promote/', promote_user, name='promote_user'),
+	
+    # Update Patron profile
+    path('patron/update-profile/', update_patron_profile, name='update_patron_profile'),
+	path('patron/remove-profile-picture/', views.remove_profile_picture, name='remove_profile_picture'),
 ]

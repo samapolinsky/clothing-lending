@@ -23,9 +23,11 @@ class Librarian(models.Model):
 class Patron(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     # Eventually add additional fields specific to patrons
+    custom_username = models.CharField(max_length=16, blank=True, null=True)
+    profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
 
     def __str__(self):
-        return self.user.username
+        return self.custom_username if self.custom_username else self.user.username
 
 
 class Collection(models.Model):
