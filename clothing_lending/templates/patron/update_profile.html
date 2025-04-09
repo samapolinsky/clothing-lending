@@ -16,7 +16,7 @@
         </form>
         {% if patron.profile_picture %}
             <div class="mt-3">
-                <img src="{{ patron.profile_picture.url }}" alt="Profile Picture" class="rounded-circle" style="width:100px; height:100px;">
+                <img src="{{ patron.profile_picture }}" alt="Profile Picture" class="rounded-circle" style="width:100px; height:100px;">
                 <br>
                 <a href="{% url 'remove_profile_picture' %}" class="btn btn-danger mt-2">Remove Profile Picture</a>
             </div>
