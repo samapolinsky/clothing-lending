@@ -536,39 +536,49 @@ def update_patron_profile(request):
     patron, created = Patron.objects.get_or_create(user=request.user)
     if request.method == 'POST':
         form = PatronProfileForm(request.POST, request.FILES, instance=patron)
-        print(f"Form submitted. Files in request: {request.FILES}")  # Debug print
+        print(f"Form submitted. Files in request: {request.FILES}")
         
         if form.is_valid():
-            print("Form is valid")  # Debug print
+            print("Form is valid")
             
             # Handle profile picture upload to S3
             if 'profile_picture' in request.FILES:
                 file_obj = request.FILES['profile_picture']
-                print(f"Profile picture found: {file_obj.name}")  # Debug print
+                print(f"Profile picture found: {file_obj.name}")
+                print(f"File size: {file_obj.size}")
+                print(f"Content type: {file_obj.content_type}")
                 
                 try:
+                    from clothing_lending.s3_utils import upload_file_to_s3
+                    # Add more specific object name
+                    object_name = f"profile_pics/{request.user.id}/{uuid.uuid4()}_{file_obj.name}"
+                    print(f"Attempting to upload to S3 with object_name: {object_name}")
+                    
                     s3_upload = upload_file_to_s3(
                         file_obj, 
-                        object_name=f"profile_pics/{request.user.id}/{file_obj.name}"
+                        object_name=object_name
                     )
-                    print(f"S3 upload result: {s3_upload}")  # Debug print
+                    print(f"S3 upload result: {s3_upload}")
                     
                     if s3_upload:
                         # Delete old profile picture from S3 if it exists
                         if patron.s3_profile_picture_key:
+                            from clothing_lending.s3_utils import delete_file_from_s3
                             delete_file_from_s3(patron.s3_profile_picture_key)
                         
                         # Update patron with new S3 info
                         patron.profile_picture = s3_upload['url']
                         patron.s3_profile_picture_key = s3_upload['key']
                         patron.save()
-                        print(f"Patron updated with new profile picture: {patron.profile_picture}")  # Debug print
+                        print(f"Patron updated with new profile picture: {patron.profile_picture}")
                         messages.success(request, "Profile updated successfully!")
                     else:
-                        print("S3 upload failed")  # Debug print
-                        messages.error(request, "Failed to upload profile picture")
+                        print("S3 upload failed - returned None")
+                        messages.error(request, "Failed to upload profile picture - S3 upload returned None")
                 except Exception as e:
-                    print(f"Error during upload: {str(e)}")  # Debug print
+                    print(f"Error during upload: {str(e)}")
+                    import traceback
+                    traceback.print_exc()
                     messages.error(request, f"Error uploading profile picture: {str(e)}")
             else:
                 # Just save the form without picture changes
@@ -576,7 +586,7 @@ def update_patron_profile(request):
                 messages.success(request, "Profile updated successfully!")
             return redirect('patron_page')
         else:
-            print(f"Form errors: {form.errors}")  # Debug print
+            print(f"Form errors: {form.errors}")
     else:
         form = PatronProfileForm(instance=patron)
 
