@@ -11,7 +11,19 @@
         <h1>Update Your Profile</h1>
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
-            {{ form.as_p }}
+            <div class="mb-3">
+                <label for="{{ form.custom_username.id_for_label }}" class="form-label">Display Name</label>
+                {{ form.custom_username }}
+            </div>
+            <div class="mb-3">
+                <label for="{{ form.profile_picture.id_for_label }}" class="form-label">Profile Picture</label>
+                {{ form.profile_picture }}
+                {% if form.profile_picture.errors %}
+                    <div class="text-danger">
+                        {{ form.profile_picture.errors }}
+                    </div>
+                {% endif %}
+            </div>
             <button type="submit" class="btn btn-primary">Save Profile</button>
         </form>
         {% if patron.profile_picture %}
