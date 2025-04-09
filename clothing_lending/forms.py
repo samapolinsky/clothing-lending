@@ -78,8 +78,8 @@ class PatronProfileForm(forms.ModelForm):
     def clean_profile_picture(self):
         image = self.cleaned_data.get('profile_picture')
         if image:
-            print("Test I am Printing the Image")
-            print(image)
+            #print("Test I am Printing the Image")
+            #print(image)
             if isinstance(image, str): # if it returns an AWS S3 URL, i.e. no image file set
                 return image # return the URL
             if not image.content_type.startswith('image/'):
