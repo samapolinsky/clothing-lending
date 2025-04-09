@@ -8,7 +8,7 @@ import uuid
 
 from clothing_lending.models import User, Patron, Librarian, Collection, Item
 from clothing_lending.forms import CollectionForm, ItemForm, PromoteUserForm, AddItemToCollectionForm, PatronProfileForm
-from clothing_lending.s3_utils import upload_file_to_s3, get_s3_client, generate_presigned_url
+from clothing_lending.s3_utils import upload_file_to_s3, get_s3_client, generate_presigned_url, delete_file_from_s3
 
 
 # Create your views here.
@@ -537,8 +537,30 @@ def update_patron_profile(request):
     if request.method == 'POST':
         form = PatronProfileForm(request.POST, request.FILES, instance=patron)
         if form.is_valid():
-            form.save()
-            messages.success(request, "Profile updated successfully!")
+            # Handle profile picture upload to S3
+            if 'profile_picture' in request.FILES:
+                file_obj = request.FILES['profile_picture']
+                s3_upload = upload_file_to_s3(
+                    file_obj, 
+                    object_name=f"profile_pics/{request.user.id}/{file_obj.name}"
+                )
+                
+                if s3_upload:
+                    # Delete old profile picture from S3 if it exists
+                    if patron.s3_profile_picture_key:
+                        delete_file_from_s3(patron.s3_profile_picture_key)
+                    
+                    # Update patron with new S3 info
+                    patron.profile_picture = s3_upload['url']
+                    patron.s3_profile_picture_key = s3_upload['key']
+                    patron.save()
+                    messages.success(request, "Profile updated successfully!")
+                else:
+                    messages.error(request, "Failed to upload profile picture")
+            else:
+                # Just save the form without picture changes
+                form.save()
+                messages.success(request, "Profile updated successfully!")
             return redirect('patron_page')
     else:
         form = PatronProfileForm(instance=patron)
