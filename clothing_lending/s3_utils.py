@@ -52,11 +52,6 @@ def check_aws_credentials():
 def upload_file_to_s3(file_obj, bucket_name=None, object_name=None):
     """
     Upload a file to an S3 bucket and return the URL and key.
-    
-    :param file_obj: File-like object to upload
-    :param bucket_name: S3 bucket name. If not specified, uses the default from settings.
-    :param object_name: S3 object name. If not specified, a UUID is generated.
-    :return: Dictionary containing the URL and key of the uploaded file, or None if upload fails
     """
     # Check AWS credentials first
     creds_check = check_aws_credentials()
@@ -74,57 +69,34 @@ def upload_file_to_s3(file_obj, bucket_name=None, object_name=None):
         ext = os.path.splitext(original_filename)[1] if '.' in original_filename else ''
         object_name = f"items/{uuid.uuid4()}{ext}"
     
-    # Get S3 client
-    s3_client = get_s3_client()
-    
     try:
-        # Print debug information
-        print(f"Uploading file: {original_filename}")
-        print(f"Target bucket: {bucket_name}")
-        print(f"Object name: {object_name}")
-        print(f"File content type: {file_obj.content_type if hasattr(file_obj, 'content_type') else 'unknown'}")
-        print(f"File size: {file_obj.size if hasattr(file_obj, 'size') else 'unknown'}")
+        # Get S3 client
+        s3_client = get_s3_client()
         
-        # Try a different approach - read the file into memory first
-        file_obj.seek(0)  # Reset file position
-        file_content = file_obj.read()  # Read the entire file
+        print(f"Uploading to S3: bucket={bucket_name}, key={object_name}")
         
-        print(f"Read {len(file_content)} bytes from file")
-        
-        # Upload using put_object instead of upload_fileobj
-        content_type = file_obj.content_type if hasattr(file_obj, 'content_type') else 'application/octet-stream'
-        
-        # Remove the ACL parameter since the bucket doesn't support ACLs
-        response = s3_client.put_object(
-            Bucket=bucket_name,
-            Key=object_name,
-            Body=file_content,
-            ContentType=content_type
+        # Upload the file
+        s3_client.upload_fileobj(
+            file_obj,
+            bucket_name,
+            object_name,
+            ExtraArgs={
+                'ContentType': getattr(file_obj, 'content_type', 'application/octet-stream')
+            }
         )
         
-        print(f"S3 put_object response: {response}")
+        # Generate URL
+        url = f"https://{bucket_name}.s3.amazonaws.com/{object_name}"
         
-        # Generate temporary signed URL (valid for 1 week) since bucket might have public access blocked
-        url = generate_presigned_url(object_key=object_name, bucket_name=bucket_name, expiration=604800)  # 7 days in seconds
-        print(f"Generated presigned URL: {url}")
-        
-        # Also return the standard URL in case bucket permissions get fixed later
-        standard_url = f"https://{bucket_name}.s3.amazonaws.com/{object_name}"
-        print(f"Standard URL: {standard_url}")
+        print(f"Upload successful. URL: {url}")
         
         return {
             'url': url,
-            'standard_url': standard_url,
             'key': object_name
         }
-    except ClientError as e:
-        print(f"Error uploading file to S3: {e}")
-        # Print more detailed error information
-        import traceback
-        traceback.print_exc()
-        return None
+        
     except Exception as e:
-        print(f"Unexpected error uploading file to S3: {e}")
+        print(f"Error in upload_file_to_s3: {str(e)}")
         import traceback
         traceback.print_exc()
         return None

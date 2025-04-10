@@ -66,10 +66,24 @@ class AddItemToCollectionForm(forms.Form):
     )
 
 class PatronProfileForm(forms.ModelForm):
+    profile_picture = forms.ImageField(required=False, widget=forms.FileInput(attrs={'class': 'form-control'}))
+    
     class Meta:
         model = Patron
         fields = ['custom_username', 'profile_picture']
         widgets = {
             'custom_username': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter your display name'}),
-            'profile_picture': forms.FileInput(attrs={'class': 'form-control'}),
         }
+
+    def clean_profile_picture(self):
+        image = self.cleaned_data.get('profile_picture')
+        if image:
+            #print("Test I am Printing the Image")
+            #print(image)
+            if isinstance(image, str): # if it returns an AWS S3 URL, i.e. no image file set
+                return image # return the URL
+            if not image.content_type.startswith('image/'):
+                raise forms.ValidationError("File is not an image")
+            if image.size > 10 * 1024 * 1024:  # 10MB limit
+                raise forms.ValidationError("Image file too large (> 10MB)")
+            return image
