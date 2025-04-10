@@ -38,6 +38,7 @@ class Collection(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='collections')
     is_private = models.BooleanField(default=False)
+    allowed_patrons = models.ManyToManyField(Patron, blank=True, related_name='allowed_collections')
 
     def __str__(self):
         return self.name

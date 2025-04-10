@@ -5,6 +5,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from django.contrib import messages
 import uuid
+from django.db.models import Q
 
 from clothing_lending.models import User, Patron, Librarian, Collection, Item
 from clothing_lending.forms import CollectionForm, ItemForm, PromoteUserForm, AddItemToCollectionForm, PatronProfileForm
@@ -46,6 +47,7 @@ def librarian_page(request):
 
 def is_patron(user):
     return user.is_authenticated and user.user_type == 2
+
 
 # # @login_required
 # @user_passes_test(is_patron)
@@ -115,13 +117,16 @@ def google_oauth_callback(request):
 
 def browse(request):
     """
-	View to browse all available items
-	"""
+    View to browse all available items
+    """
     # Get all available items
     items = Item.objects.filter(available=True)
 
     # Get all collections
-    collections = Collection.objects.all()
+    if request.user.is_authenticated and request.user.user_type == 1:
+        collections = Collection.objects.all()
+    if request.user.is_authenticated and request.user.user_type == 2:
+        collections = Collection.objects.filter(Q(is_private=False) | Q(allowed_patrons=request.user))
 
     if not request.user.is_authenticated:
         collections = Collection.objects.filter(is_private=False)
@@ -154,6 +159,14 @@ def add_collection(request):
         form = CollectionForm()
 
     return render(request, 'librarian/add_collection.html', {'form': form})
+
+
+def user_can_view_collection(user, collection):
+    if not collection.is_private:
+        return True
+    if user.groups.filter(name='Librarians').exists():
+        return True
+    return collection.allowed_patrons.filter(id=user.id).exists()
 
 
 @user_passes_test(is_librarian)
@@ -532,40 +545,41 @@ def patron_page(request):
 
     return render(request, 'patron/page.html', context)
 
+
 def update_patron_profile(request):
     patron, created = Patron.objects.get_or_create(user=request.user)
     if request.method == 'POST':
         form = PatronProfileForm(request.POST, request.FILES, instance=patron)
         print(f"Form submitted. Files in request: {request.FILES}")
-        
+
         if form.is_valid():
             print("Form is valid")
-            
+
             # Handle profile picture upload to S3
             if 'profile_picture' in request.FILES:
                 file_obj = request.FILES['profile_picture']
                 print(f"Profile picture found: {file_obj.name}")
                 print(f"File size: {file_obj.size}")
                 print(f"Content type: {file_obj.content_type}")
-                
+
                 try:
                     from clothing_lending.s3_utils import upload_file_to_s3
                     # Add more specific object name
                     object_name = f"profile_pics/{request.user.id}/{uuid.uuid4()}_{file_obj.name}"
                     print(f"Attempting to upload to S3 with object_name: {object_name}")
-                    
+
                     s3_upload = upload_file_to_s3(
-                        file_obj, 
+                        file_obj,
                         object_name=object_name
                     )
                     print(f"S3 upload result: {s3_upload}")
-                    
+
                     if s3_upload:
                         # Delete old profile picture from S3 if it exists
                         if patron.s3_profile_picture_key:
                             from clothing_lending.s3_utils import delete_file_from_s3
                             delete_file_from_s3(patron.s3_profile_picture_key)
-                        
+
                         # Update patron with new S3 info
                         patron.profile_picture = s3_upload['url']
                         patron.s3_profile_picture_key = s3_upload['key']
@@ -592,6 +606,7 @@ def update_patron_profile(request):
 
     context = {'form': form, 'patron': patron}
     return render(request, 'patron/update_profile.html', context)
+
 
 @user_passes_test(is_patron)
 def remove_profile_picture(request):

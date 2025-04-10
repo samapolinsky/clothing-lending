@@ -4,10 +4,12 @@ from .models import Collection, Item, Patron
 class CollectionForm(forms.ModelForm):
     class Meta:
         model = Collection
-        fields = ['name', 'description']
+        fields = ['name', 'description', 'is_private', 'allowed_patrons']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+            'is_private': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'allowed_patrons': forms.SelectMultiple(attrs={'class': 'form-control'})
         }
 
 class ItemForm(forms.ModelForm):
