@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User, Patron, Librarian, Collection, Item
+from .models import User, Patron, Librarian, Collection, Item, Lending
 
 
 # Inline for Librarian model
@@ -19,21 +19,13 @@ class PatronInline(admin.StackedInline):
 
 # Custom UserAdmin
 class UserAdmin(BaseUserAdmin):
-    # Fields to display in the list view
+    # Add user_type to the list of fields that can be edited
     list_display = ('username', 'email', 'first_name', 'last_name', 'user_type', 'is_staff')
+    fieldsets = list(BaseUserAdmin.fieldsets) + [
+        ('User Type', {'fields': ('user_type',)}),
+    ]
 
-    # Add inlines based on user type
-    def get_inline_instances(self, request, obj=None):
-        if not obj:  # No object means we are in the "Add" view
-            return []
-        if obj.user_type == 1:  # Librarian
-            return [LibrarianInline(self.model, self.admin_site)]
-        elif obj.user_type == 2:  # Patron
-            return [PatronInline(self.model, self.admin_site)]
-        return []
-
-
-# Register the custom UserAdmin
+# Make sure to register the custom UserAdmin
 admin.site.register(User, UserAdmin)
 
 
@@ -54,3 +46,4 @@ class ItemAdmin(admin.ModelAdmin):
 
 admin.site.register(Librarian)
 admin.site.register(Patron)
+admin.site.register(Lending)

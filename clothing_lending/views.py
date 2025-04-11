@@ -5,8 +5,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from django.contrib import messages
 import uuid
+from django.utils import timezone
 
-from clothing_lending.models import User, Patron, Librarian, Collection, Item
+from clothing_lending.models import User, Patron, Librarian, Collection, Item, Lending
 from clothing_lending.forms import CollectionForm, ItemForm, PromoteUserForm, AddItemToCollectionForm, PatronProfileForm
 from clothing_lending.s3_utils import upload_file_to_s3, get_s3_client, generate_presigned_url, delete_file_from_s3
 
@@ -31,14 +32,34 @@ def is_librarian(user):
 
 @user_passes_test(is_librarian)
 def librarian_page(request):
-    collections = Collection.objects.all()  # Fetch all collections
-    recent_items = Item.objects.all().order_by('-created_at')  # Fetch all items
-    promote_form = PromoteUserForm()  # Initialize the form
+    # Get the librarian instance for the current user
+    librarian = get_object_or_404(Librarian, user=request.user)
+    
+    # Show only collections owned by this librarian 
+    collections = Collection.objects.filter(created_by=request.user)
+    
+    # Show only items created by this librarian
+    recent_items = Item.objects.filter(created_by=librarian).order_by('-created_at')
+    
+    promote_form = PromoteUserForm()
+    
+    # Show only lending requests for items created by this librarian
+    pending_requests = Lending.objects.filter(
+        item__created_by=librarian,
+        status='PENDING'
+    ).order_by('-request_date')
+    
+    active_lendings = Lending.objects.filter(
+        item__created_by=librarian,
+        status='APPROVED'
+    ).order_by('-approved_date')
 
     context = {
         'collections': collections,
         'recent_items': recent_items,
-        'form': promote_form  # Add the form to the context
+        'form': promote_form,
+        'pending_requests': pending_requests,
+        'active_lendings': active_lendings
     }
 
     return render(request, 'librarian/page.html', context)
@@ -46,25 +67,6 @@ def librarian_page(request):
 
 def is_patron(user):
     return user.is_authenticated and user.user_type == 2
-
-# # @login_required
-# @user_passes_test(is_patron)
-# def patron_page(request):
-#     """
-#     View for the patron dashboard
-#     """
-#     # Get all available items
-#     items = Item.objects.filter(available=True)
-
-#     # Get a list of all categories for filtering
-#     categories = Item.objects.values_list('category', flat=True).distinct()
-
-#     context = {
-#         'items': items,
-#         'categories': categories
-#     }
-
-#     return render(request, 'patron/page.html', context)
 
 
 def logout_view(request):
@@ -524,10 +526,29 @@ def delete_collection(request, collection_id):
 def patron_page(request):
     patron, created = Patron.objects.get_or_create(user=request.user)
     collections = Collection.objects.filter(created_by=request.user)  # Fetch collections created by the patron
+    
+    # Get all lending requests for this patron
+    pending_requests = Lending.objects.filter(
+        borrower=patron,
+        status='PENDING'
+    ).order_by('-request_date')
+    
+    approved_items = Lending.objects.filter(
+        borrower=patron,
+        status='APPROVED'
+    ).order_by('-approved_date')
+    
+    borrowing_history = Lending.objects.filter(
+        borrower=patron,
+        status__in=['RETURNED', 'REJECTED']
+    ).order_by('-request_date')[:10]  # Show last 10 items
 
     context = {
         'collections': collections,
         'patron': patron,
+        'pending_requests': pending_requests,
+        'approved_items': approved_items,
+        'borrowing_history': borrowing_history,
     }
 
     return render(request, 'patron/page.html', context)
@@ -608,3 +629,94 @@ def remove_profile_picture(request):
     else:
         messages.info(request, "No profile picture to remove.")
     return redirect('update_patron_profile')
+
+@login_required
+def request_borrow(request, item_id):
+    print(f"request_borrow view called with item_id: {item_id}")  # Debug print
+    
+    if request.method == 'POST':
+        print("POST request received")  # Debug print
+        try:
+            item = get_object_or_404(Item, pk=item_id)
+            patron = get_object_or_404(Patron, user=request.user)
+            
+            print(f"Found item: {item.name} and patron: {patron}")  # Debug print
+            
+            # Check if item is available
+            if not item.available:
+                messages.error(request, 'This item is not available for borrowing.')
+                return redirect(f'/lending/items/{item_id}/')
+                
+            # Check if user already has a pending or approved request for this item
+            existing_request = Lending.objects.filter(
+                item=item,
+                borrower=patron,
+                status__in=['PENDING', 'APPROVED']
+            ).exists()
+            
+            print(f"Existing request check: {existing_request}")  # Debug print
+            
+            if existing_request:
+                messages.warning(request, 'You already have a pending or approved request for this item.')
+                return redirect(f'/lending/items/{item_id}/')
+                
+            # Create new lending request
+            lending = Lending.objects.create(
+                item=item,
+                borrower=patron,
+                status='PENDING',
+                request_date=timezone.now()
+            )
+            
+            print(f"Created new lending request: {lending.id}")  # Debug print
+            
+            # Update item availability
+            item.available = False
+            item.save()
+            
+            messages.success(request, 'Your borrow request has been submitted and is pending approval.')
+            return redirect(f'/lending/items/{item_id}/')
+            
+        except Exception as e:
+            print(f"Error in request_borrow: {str(e)}")  # Debug print
+            import traceback
+            traceback.print_exc()
+            messages.error(request, f'An error occurred: {str(e)}')
+            return redirect(f'/lending/items/{item_id}/')
+    
+    return redirect(f'/lending/items/{item_id}/')
+
+@user_passes_test(is_librarian)
+def manage_lending_request(request, lending_id):
+    lending = get_object_or_404(Lending, pk=lending_id)
+    librarian = get_object_or_404(Librarian, user=request.user)
+    
+    # Check if the current librarian is the creator of the item
+    if lending.item.created_by != librarian:
+        messages.error(request, "You don't have permission to manage this lending request. Only the librarian who created the item can approve or reject requests for it.")
+        return redirect('/lending/librarian/page/')
+    
+    action = request.POST.get('action')
+    
+    if action == 'approve':
+        lending.status = 'APPROVED'
+        lending.approved_date = timezone.now()
+        messages.success(request, f'Lending request for {lending.item.name} has been approved.')
+    elif action == 'reject':
+        lending.status = 'REJECTED'
+        lending.item.available = True
+        lending.item.save()
+        messages.success(request, f'Lending request for {lending.item.name} has been rejected.')
+    elif action == 'return':
+        lending.status = 'RETURNED'
+        lending.return_date = timezone.now()
+        lending.item.available = True
+        lending.item.save()
+        messages.success(request, f'{lending.item.name} has been marked as returned.')
+    
+    lending.save()
+    return redirect('/lending/librarian/page/')
+
+# Add a simple test view that always works
+def test_view(request):
+    return HttpResponse("This is a test view. If you see this, URL routing is working.")
