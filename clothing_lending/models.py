@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 import uuid
+from django.utils import timezone
 
 
 # Create your models here.
@@ -79,3 +80,22 @@ class Item(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Lending(models.Model):
+    STATUS_CHOICES = [
+        ('PENDING', 'Pending'),
+        ('APPROVED', 'Approved'),
+        ('REJECTED', 'Rejected'),
+        ('RETURNED', 'Returned')
+    ]
+    
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    borrower = models.ForeignKey(Patron, on_delete=models.CASCADE)
+    request_date = models.DateTimeField(default=timezone.now)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='PENDING')
+    approved_date = models.DateTimeField(null=True, blank=True)
+    return_date = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.borrower} - {self.item.name} ({self.get_status_display()})"
