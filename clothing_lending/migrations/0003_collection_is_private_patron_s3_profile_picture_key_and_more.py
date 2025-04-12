@@ -15,11 +15,11 @@ class Migration(migrations.Migration):
         #     name='is_private',
         #     field=models.BooleanField(default=False),
         # ),
-        migrations.AddField(
-            model_name='patron',
-            name='s3_profile_picture_key',
-            field=models.CharField(blank=True, max_length=255, null=True),
-        ),
+        # migrations.AddField(
+        #     model_name='patron',
+        #     name='s3_profile_picture_key',
+        #     field=models.CharField(blank=True, max_length=255, null=True),
+        # ),
         migrations.AlterField(
             model_name='patron',
             name='custom_username',

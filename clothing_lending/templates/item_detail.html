@@ -91,6 +91,15 @@
                                 {% if user.is_authenticated %}
                                 <hr>
                                 <h5>Add to Collections</h5>
+
+                                {% if form.non_field_errors %}
+                                    <div class="alert alert-danger">
+                                        {% for error in form.non_field_errors %}
+                                            <p>{{ error }}</p>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+
                                 <form method="POST">
                                     {% csrf_token %}
                                     {{ form.as_p }}

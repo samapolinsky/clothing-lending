@@ -2,6 +2,8 @@
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from .models import User, Librarian, Patron
+from django.db.models.signals import m2m_changed
+from .models import Item
 
 @receiver(post_save, sender=User)
 def create_or_update_librarian(sender, instance, created, **kwargs):
@@ -42,3 +44,11 @@ def handle_user_type_change(sender, instance, **kwargs):
                 # User is being promoted from patron to librarian
                 Patron.objects.filter(user=instance).delete()
                 Librarian.objects.get_or_create(user=instance)
+
+@receiver(m2m_changed, sender=Item.collections.through)
+def update_item_privacy(sender, instance, action, **kwargs):
+    if action in ["post_add", "post_remove", "post_clear"]:
+        # Check if any of the item's collections are private
+        has_private = instance.collections.filter(is_private=True).exists()
+        instance.private_collection = has_private
+        instance.save()

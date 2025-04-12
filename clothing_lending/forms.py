@@ -51,13 +51,14 @@ class PromoteUserForm(forms.Form):
 
 class AddItemToCollectionForm(forms.Form):
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None)
+        self.user = kwargs.pop('user', None)
+        self.item = kwargs.pop('item', None)
         super(AddItemToCollectionForm, self).__init__(*args, **kwargs)
-        if user and user.is_authenticated:
-            if user.user_type == 1:  # Librarian
+        if self.user and self.user.is_authenticated:
+            if self.user.user_type == 1:  # Librarian
                 self.fields['collections'].queryset = Collection.objects.all()
-            elif user.user_type == 2:  # Patron
-                self.fields['collections'].queryset = Collection.objects.filter(created_by=user)
+            elif self.user.user_type == 2:  # Patron
+                self.fields['collections'].queryset = Collection.objects.filter(created_by=self.user)
         else:
             self.fields['collections'].queryset = Collection.objects.filter(is_private=False)
 
@@ -66,6 +67,25 @@ class AddItemToCollectionForm(forms.Form):
         queryset=Collection.objects.none(),
         widget=forms.SelectMultiple(attrs={'class': 'form-control'})
     )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        selected_collections = cleaned_data.get('collections')
+
+        if self.item and selected_collections:
+            current_collections = self.item.collections.all()
+            current_is_private = current_collections.filter(is_private=True).exists()
+            new_is_private = selected_collections.filter(is_private=True).exists()
+
+            if new_is_private and current_collections.exists():
+                raise forms.ValidationError(
+                    f"Item '{self.item.name}' is already in a collection and cannot be added to a private one."
+                )
+
+            if current_is_private:
+                raise forms.ValidationError(
+                    f"Item '{self.item.name}' is in a private collection and cannot be added to others."
+                )
 
 class PatronProfileForm(forms.ModelForm):
     profile_picture = forms.ImageField(required=False, widget=forms.FileInput(attrs={'class': 'form-control'}))

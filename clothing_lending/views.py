@@ -120,16 +120,23 @@ def browse(request):
     View to browse all available items
     """
     # Get all available items
-    items = Item.objects.filter(available=True)
+    # items = Item.objects.filter(available=True)
 
     # Get all collections
     if request.user.is_authenticated and request.user.user_type == 1:
         collections = Collection.objects.all()
+        items = Item.objects.filter(available=True)
     if request.user.is_authenticated and request.user.user_type == 2:
-        collections = Collection.objects.filter(Q(is_private=False) | Q(allowed_patrons=request.user))
+        try:
+            patron = request.user.patron
+            collections = Collection.objects.filter(Q(is_private=False) | Q(allowed_patrons=patron))
+            items = Item.objects.filter(Q(available=True) and (Q(private_collection=False) | Q(collections__allowed_patrons=patron)))
+        except Patron.DoesNotExist:
+            collections = Collection.objects.filter(is_private=False)
 
     if not request.user.is_authenticated:
         collections = Collection.objects.filter(is_private=False)
+        items = Item.objects.filter(Q(available=True) and Q(private_collection=False))
 
     # Get a list of all categories for filtering
     categories = Item.objects.values_list('category', flat=True).distinct()
@@ -150,6 +157,7 @@ def add_collection(request):
             collection = form.save(commit=False)
             collection.created_by = request.user
             collection.save()
+            form.save_m2m()
             messages.success(request, 'Collection created successfully!')
             if request.user.user_type == 1:
                 return redirect('librarian_page')
@@ -232,7 +240,9 @@ def add_item(request):
 def item_detail(request, item_id):
     item = get_object_or_404(Item, pk=item_id)
     if request.method == 'POST' and 'add_to_collection' in request.POST:
-        form = AddItemToCollectionForm(request.POST, user=request.user if request.user.is_authenticated else None)
+        # form = AddItemToCollectionForm(request.POST, user=request.user if request.user.is_authenticated else None)
+        form = AddItemToCollectionForm(request.POST, user=request.user if request.user.is_authenticated else None, item=item)
+
         if form.is_valid():
             collections = form.cleaned_data['collections']
             for collection in collections:
@@ -241,7 +251,11 @@ def item_detail(request, item_id):
             return redirect('item_detail', item_id=item_id)
     else:
         # if request.user.is_authenticated:
-        form = AddItemToCollectionForm(user=request.user)
+        # form = AddItemToCollectionForm(user=request.user)
+        form = AddItemToCollectionForm(
+            user=request.user if request.user.is_authenticated else None,
+            item=item
+        )
 
     return render(request, 'item_detail.html', {'item': item, 'form': form})
 
