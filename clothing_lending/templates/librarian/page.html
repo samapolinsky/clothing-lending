@@ -5,123 +5,305 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Librarian Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            background-color: #f8f9fa;
-            color: #212529;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background: #f8f9fa;
+            min-height: 100vh;
+            color: #111;
         }
-        .main-container {
-            max-width: 1200px;
+        
+        header {
+            background: #111;
+            padding: 2rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .header-content {
+            max-width: 1400px;
             margin: 0 auto;
-            padding: 2rem 1rem;
-        }
-        .card {
-            border: none;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            transition: transform 0.3s ease;
-            border-radius: 0;
-            margin-bottom: 2rem;
-        }
-        .card-header {
-            border-radius: 0;
-            border-bottom: none;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .bg-primary, .btn-primary {
-            background-color: #007bff !important;
-            border-color: #007bff !important;
-        }
-        .bg-success, .btn-success {
-            background-color: #28a745 !important;
-            border-color: #28a745 !important;
-        }
-        .bg-warning, .btn-warning {
-            background-color: #ffc107 !important;
-            border-color: #ffc107 !important;
-        }
-        .bg-danger, .btn-danger {
-            background-color: #dc3545 !important;
-            border-color: #dc3545 !important;
-        }
-        .btn {
-            border-radius: 0;
-            padding: 0.5rem 1.5rem;
-            text-transform: uppercase;
-            font-weight: 500;
-            letter-spacing: 0.5px;
-            transition: all 0.3s ease;
-        }
-        .btn-sm {
-            padding: 0.25rem 0.75rem;
-        }
-        .list-group-item {
-            border-left: none;
-            border-right: none;
-            padding: 1rem;
-        }
-        .list-group-item:first-child {
-            border-top: none;
-        }
-        .badge {
-            border-radius: 0;
-            padding: 0.5em 0.75em;
-            font-weight: 500;
-        }
-        .alert {
-            border-radius: 0;
-        }
-        h1, h2, h3, h4, h5, h6 {
-            font-weight: 700;
-        }
-        .table {
-            border-collapse: collapse;
-        }
-        .table th {
-            text-transform: uppercase;
-            font-weight: 500;
-            letter-spacing: 0.5px;
-            background-color: #f8f9fa;
-            border-top: none;
-        }
-        .table td, .table th {
-            vertical-align: middle;
-            padding: 1rem;
-        }
-        .header-row {
+            padding: 0 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
+        }
+        
+        .header-content h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            color: white;
+            margin: 0;
+            font-size: 1.75rem;
+            line-height: 1.1;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+        
+        .btn {
+            background: none;
+            border: 1px solid #ddd;
+            padding: 0.75rem 1.5rem;
+            text-decoration: none;
+            font-size: 0.9rem;
+            border-radius: 0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .btn-primary {
+            background: #111;
+            color: white;
+            border-color: #111;
+        }
+        
+        .btn-secondary {
+            color: #666;
+        }
+        
+        .btn-primary:hover {
+            background: #333;
+        }
+        
+        .btn-secondary:hover {
+            border-color: #111;
+            color: #111;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+            border-color: #dc3545;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+        }
+        
+        .main-container {
+            max-width: 1400px;
+            margin: 3rem auto;
+            padding: 0 2rem;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .card {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-radius: 4px;
+            overflow: hidden;
             margin-bottom: 2rem;
         }
+        
+        .card-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-header h4 {
+            font-family: 'Space Grotesk', sans-serif;
+            margin: 0;
+            font-size: 1.4rem;
+            letter-spacing: -0.02em;
+            color: #111;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        .section-heading {
+            font-family: 'Space Grotesk', sans-serif;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            letter-spacing: -0.02em;
+            color: #111;
+        }
+        
+        .list-group {
+            border: 1px solid #eee;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .list-group-item {
+            padding: 1.25rem;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .list-group-item:last-child {
+            border-bottom: none;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 0.5em 0.75em;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 100px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .badge-primary {
+            background: #111;
+            color: white;
+        }
+        
+        .badge-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .badge-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        a.title-link {
+            color: #111;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s ease;
+        }
+        
+        a.title-link:hover {
+            color: #666;
+        }
+        
+        .meta-text {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+        }
+        
+        .alert {
+            padding: 1.5rem;
+            border-radius: 4px;
+            margin-bottom: 2rem;
+        }
+        
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .alert-secondary {
+            background: #f1f1f1;
+            color: #666;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .table th {
+            text-align: left;
+            padding: 1rem;
+            border-bottom: 2px solid #eee;
+            color: #666;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+        }
+        
+        .table td {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+            vertical-align: middle;
+        }
+        
+        .table tr:last-child td {
+            border-bottom: none;
+        }
+        
         .lending-action-buttons {
             display: flex;
             gap: 0.5rem;
         }
-        .section-heading {
-            margin-bottom: 1.5rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid #dee2e6;
+        
+        .nav-actions {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+            margin-bottom: 1rem;
+        }
+        
+        .form-group {
+            flex: 1;
         }
     </style>
 </head>
 <body>
+    <header>
+        <div class="header-content">
+            <h1>AIRDROBE DASHBOARD</h1>
+            <div class="nav-actions">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'browse' %}" class="btn btn-secondary">Browse Items</a>
+                    <a href="{% url 'logout' %}" class="btn btn-secondary">Exit</a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
     <div class="main-container">
         {% if user.is_authenticated %}
-            <div class="header-row">
-                <div>
-                    <h1 class="mb-2">Librarian Dashboard</h1>
-                    <p class="text-muted">Manage your collections, items, and lending requests</p>
-                </div>
-                <div>
-                    <a href="{% url 'browse' %}" class="btn btn-secondary">Browse Items</a>
-                    <a href="{% url 'logout' %}" class="btn btn-outline-secondary">Logout</a>
-                </div>
-            </div>
-
+            <h2 class="section-heading">Librarian Dashboard</h2>
+            
             {% if messages %}
                 <div class="alert alert-info">
                     {% for message in messages %}
@@ -130,78 +312,74 @@
                 </div>
             {% endif %}
 
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header bg-primary text-white">
-                            <h4 class="mb-0">Your Collections</h4>
-                        </div>
-                        <div class="card-body">
-                            <a href="{% url 'add_collection' %}" class="btn btn-primary mb-4">Add New Collection</a>
-                            
-                            {% if collections %}
-                                <div class="list-group">
-                                    {% for collection in collections %}
-                                        <div class="list-group-item d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <a href="{% url 'collection_detail' collection.id %}" class="fw-bold text-decoration-none">{{ collection.name }}</a>
-                                                <p class="text-muted mb-0 small">{{ collection.description|truncatechars:60 }}</p>
-                                            </div>
-                                            <span class="badge bg-primary">{{ collection.items.count }} items</span>
+            <div class="dashboard-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Your Collections</h4>
+                    </div>
+                    <div class="card-body">
+                        <a href="{% url 'add_collection' %}" class="btn btn-primary" style="margin-bottom: 1.5rem; display: inline-block;">Add New Collection</a>
+                        
+                        {% if collections %}
+                            <div class="list-group">
+                                {% for collection in collections %}
+                                    <div class="list-group-item">
+                                        <div>
+                                            <a href="{% url 'collection_detail' collection.id %}" class="title-link">{{ collection.name }}</a>
+                                            <p class="meta-text">{{ collection.description|truncatechars:60 }}</p>
                                         </div>
-                                    {% endfor %}
-                                </div>
-                            {% else %}
-                                <div class="alert alert-secondary">
-                                    You haven't created any collections yet.
-                                </div>
-                            {% endif %}
-                        </div>
+                                        <span class="badge badge-primary">{{ collection.items.count }} items</span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-secondary">
+                                You haven't created any collections yet.
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
                 
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header bg-success text-white">
-                            <h4 class="mb-0">Your Items</h4>
-                        </div>
-                        <div class="card-body">
-                            <a href="{% url 'add_item' %}" class="btn btn-success mb-4">Add New Item</a>
-                            
-                            {% if recent_items %}
-                                <div class="list-group">
-                                    {% for item in recent_items %}
-                                        <div class="list-group-item d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <a href="{% url 'item_detail' item.id %}" class="fw-bold text-decoration-none">{{ item.name }}</a>
-                                                <p class="text-muted mb-0 small">{{ item.category }} • {{ item.get_size_display }}</p>
-                                            </div>
-                                            <span class="badge {% if item.available %}bg-success{% else %}bg-danger{% endif %}">
-                                                {% if item.available %}Available{% else %}Not Available{% endif %}
-                                            </span>
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Your Items</h4>
+                    </div>
+                    <div class="card-body">
+                        <a href="{% url 'add_item' %}" class="btn btn-primary" style="margin-bottom: 1.5rem; display: inline-block;">Add New Item</a>
+                        
+                        {% if recent_items %}
+                            <div class="list-group">
+                                {% for item in recent_items %}
+                                    <div class="list-group-item">
+                                        <div>
+                                            <a href="{% url 'item_detail' item.id %}" class="title-link">{{ item.name }}</a>
+                                            <p class="meta-text">{{ item.category }} • {{ item.get_size_display }}</p>
                                         </div>
-                                    {% endfor %}
-                                </div>
-                            {% else %}
-                                <div class="alert alert-secondary">
-                                    You haven't added any items yet.
-                                </div>
-                            {% endif %}
-                        </div>
+                                        <span class="badge {% if item.available %}badge-success{% else %}badge-danger{% endif %}">
+                                            {% if item.available %}Available{% else %}Not Available{% endif %}
+                                        </span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-secondary">
+                                You haven't added any items yet.
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
 
-            <h2 class="section-heading mt-5">Lending Management</h2>
+            <h2 class="section-heading">Lending Management</h2>
             
             <div class="card">
-                <div class="card-header bg-warning">
-                    <h4 class="mb-0 text-dark">Pending Borrow Requests</h4>
+                <div class="card-header">
+                    <h4>Pending Borrow Requests</h4>
                 </div>
                 <div class="card-body">
                     {% if pending_requests %}
                         <div class="table-responsive">
-                            <table class="table table-hover">
+                            <table class="table">
                                 <thead>
                                     <tr>
                                         <th>Item</th>
@@ -215,7 +393,7 @@
                                     {% for request in pending_requests %}
                                     <tr>
                                         <td>
-                                            <a href="{% url 'item_detail' request.item.id %}" class="fw-bold text-decoration-none">{{ request.item.name }}</a>
+                                            <a href="{% url 'item_detail' request.item.id %}" class="title-link">{{ request.item.name }}</a>
                                         </td>
                                         <td>{{ request.item.category }}</td>
                                         <td>{{ request.borrower.user.username }}</td>
@@ -246,13 +424,13 @@
             </div>
 
             <div class="card">
-                <div class="card-header bg-info text-white">
-                    <h4 class="mb-0">Currently Borrowed Items</h4>
+                <div class="card-header">
+                    <h4>Currently Borrowed Items</h4>
                 </div>
                 <div class="card-body">
                     {% if active_lendings %}
                         <div class="table-responsive">
-                            <table class="table table-hover">
+                            <table class="table">
                                 <thead>
                                     <tr>
                                         <th>Item</th>
@@ -266,7 +444,7 @@
                                     {% for lending in active_lendings %}
                                     <tr>
                                         <td>
-                                            <a href="{% url 'item_detail' lending.item.id %}" class="fw-bold text-decoration-none">{{ lending.item.name }}</a>
+                                            <a href="{% url 'item_detail' lending.item.id %}" class="title-link">{{ lending.item.name }}</a>
                                         </td>
                                         <td>{{ lending.item.category }}</td>
                                         <td>{{ lending.borrower.user.username }}</td>
@@ -292,29 +470,28 @@
             </div>
 
             <div class="card mt-4">
-                <div class="card-header bg-secondary text-white">
-                    <h4 class="mb-0">Promote User to Librarian</h4>
+                <div class="card-header">
+                    <h4>Promote User to Librarian</h4>
                 </div>
                 <div class="card-body">
-                    <form method="POST" action="{% url 'promote_user' %}" class="row g-3">
+                    <form method="POST" action="{% url 'promote_user' %}" class="form-row">
                         {% csrf_token %}
-                        <div class="col-md-8">
+                        <div class="form-group">
                             <label for="email" class="form-label">User Email</label>
                             {{ form.email.as_widget|safe }}
                         </div>
-                        <div class="col-md-4 d-flex align-items-end">
-                            <button type="submit" class="btn btn-secondary">Promote User</button>
+                        <div>
+                            <button type="submit" class="btn btn-primary">Promote User</button>
                         </div>
                     </form>
                 </div>
             </div>
         {% else %}
-            <div class="alert alert-warning">
+            <div class="alert alert-info">
                 <p>You need to be logged in as a librarian to access this page.</p>
                 <a href="{% url 'account_login' %}" class="btn btn-primary">Login</a>
             </div>
         {% endif %}
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
