@@ -220,7 +220,7 @@ def add_item(request):
 
 def item_detail(request, item_id):
     item = get_object_or_404(Item, pk=item_id)
-    if request.method == 'POST' and 'add_to_collection' in request.POST:
+    if request.method == 'POST': # removed  and 'add_to_collection' in request.POST to see if it works
         form = AddItemToCollectionForm(request.POST, user=request.user if request.user.is_authenticated else None)
         if form.is_valid():
             collections = form.cleaned_data['collections']
@@ -230,6 +230,7 @@ def item_detail(request, item_id):
             return redirect('item_detail', item_id=item_id)
     else:
         # if request.user.is_authenticated:
+        # print("entered here")
         form = AddItemToCollectionForm(user=request.user)
 
     return render(request, 'item_detail.html', {'item': item, 'form': form})
