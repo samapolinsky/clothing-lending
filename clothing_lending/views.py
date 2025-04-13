@@ -574,7 +574,7 @@ def delete_collection(request, collection_id):
 @user_passes_test(is_patron)
 def patron_page(request):
     patron, created = Patron.objects.get_or_create(user=request.user)
-    collections = Collection.objects.filter(created_by=request.user)  # Fetch collections created by the patron
+    collections = Collection.objects.filter(Q(created_by=request.user) | Q(allowed_patrons=patron))  # Fetch collections created by the patron
 
     # Get all lending requests for this patron
     pending_requests = Lending.objects.filter(
