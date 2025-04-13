@@ -141,6 +141,14 @@
                                 <h3>{{ collection.name }}</h3>
                                 <p class="card-text">{{ collection.description }}</p>
                                 <span class="collection-meta">Created by: {{ collection.created_by.email}}</span>
+                                <br>
+                                <br>
+                                {% if user.is_authenticated and user.user_type == 2 %}
+                                <form method="POST" action="">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-primary">Request Access</button>
+                                </form>
+                                {% endif %}
                             </div>
                         </div>
                         {% endif %}
