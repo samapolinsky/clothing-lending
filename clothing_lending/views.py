@@ -125,18 +125,19 @@ def browse(request):
     # Get all collections
     if request.user.is_authenticated and request.user.user_type == 1:
         collections = Collection.objects.all()
-        items = Item.objects.filter(available=True)
+        # items = Item.objects.filter(available=True)
+        items = Item.objects.all()
     if request.user.is_authenticated and request.user.user_type == 2:
         try:
             patron = request.user.patron
             collections = Collection.objects.filter(Q(is_private=False) | Q(allowed_patrons=patron))
-            items = Item.objects.filter(Q(available=True) and (Q(private_collection=False) | Q(collections__allowed_patrons=patron)))
+            items = Item.objects.filter(Q(available=True) and (Q(private_collection=False) | Q(collections__allowed_patrons=patron))).distinct()
         except Patron.DoesNotExist:
             collections = Collection.objects.filter(is_private=False)
 
     if not request.user.is_authenticated:
         collections = Collection.objects.filter(is_private=False)
-        items = Item.objects.filter(Q(available=True) and Q(private_collection=False))
+        items = Item.objects.filter(Q(available=True) and Q(private_collection=False)).distinct()
 
     # Get a list of all categories for filtering
     categories = Item.objects.values_list('category', flat=True).distinct()
