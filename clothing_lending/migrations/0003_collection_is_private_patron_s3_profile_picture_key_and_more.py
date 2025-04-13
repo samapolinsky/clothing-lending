@@ -6,7 +6,9 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('clothing_lending', '0002_collection_is_private_patron_custom_username_and_more'),
+        # ('clothing_lending', '0002_collection_is_private_patron_custom_username_and_more'),
+        ('clothing_lending', '0002_a'),
+        ('clothing_lending', '0002_b')
     ]
 
     operations = [
