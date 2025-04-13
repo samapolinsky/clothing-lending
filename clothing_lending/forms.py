@@ -4,7 +4,7 @@ from .models import Collection, Item, Patron
 class CollectionForm(forms.ModelForm):
     class Meta:
         model = Collection
-        fields = ['name', 'description']
+        fields = ['name', 'description',]
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
