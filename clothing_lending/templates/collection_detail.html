@@ -5,84 +5,166 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ collection.name }} - Detail</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
-    <div class="container mt-5">
-        <div class="row">
-            <div class="col-md-10 offset-md-1">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{% url 'browse' %}">Browse</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">{{ collection.name }}</li>
-                    </ol>
-                </nav>
-                
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <h2 class="card-title">{{ collection.name }}</h2>
-                        <p class="card-text">{{ collection.description }}</p>
-                        <div class="d-flex justify-content-between">
-                            {% if user.is_authenticated and user.user_type == 1 %}
-                            <a href="{% url 'librarian_page' %}" class="btn btn-secondary">Back to Dashboard</a>
-                            {% else %}
-                            <a href="{% url 'browse' %}" class="btn btn-secondary">Back to Browse</a>
-                            {% endif %}
-                            {% if user.is_authenticated and user.user_type == 1 %}
-                            <form method="POST" action="{% url 'delete_collection' collection.id %}" class="d-inline">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-danger">Delete Collection</button>
-                            </form>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-
-                <div class="grid-header">
-                    <h2>Items in {{ collection.name }}</h2>
-                </div>
-                
-                <div class="items-grid">
-                    {% for item in items %}
-                    <div class="item-card" data-item-id="{{ item.id }}">
-                        <div class="item-image">
-                            {% if item.s3_image_key %}
-                            <div class="image-container">
-                                <img class="item-img" data-item-id="{{ item.id }}" src="" alt="{{ item.name }}">
-                                <div class="image-loading">Loading...</div>
-                            </div>
-                            {% else %}
-                            <div class="placeholder-image">No image</div>
-                            {% endif %}
-
-                            {% if item.available %}
-                            <a href="{% url 'item_detail' item.id %}" class="borrow-btn">View Details</a>
-                            {% endif %}
-                        </div>
-                        <div class="item-details">
-                            <div class="item-meta">
-                                <h3>{{ item.name }}</h3>
-                                <span class="item-category">{{ item.category }}</span>
-                                <span class="item-size">{{ item.get_size_display }}</span>
-                                <span class="item-status {% if item.available %}available{% else %}unavailable{% endif %}">
-                                    {{ item.available|yesno:"Available,Unavailable" }}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
     <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background: #f8f9fa;
+            min-height: 100vh;
+            color: #111;
+        }
+        
+        header {
+            background: #111;
+            padding: 2rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-content h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            color: white;
+            margin: 0;
+            font-size: 1.75rem;
+            line-height: 1.1;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+        
+        .main-container {
+            max-width: 1400px;
+            margin: 3rem auto;
+            padding: 0 2rem;
+        }
+        
+        .btn {
+            background: none;
+            border: 1px solid #ddd;
+            padding: 0.75rem 1.5rem;
+            text-decoration: none;
+            font-size: 0.9rem;
+            border-radius: 0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .btn-primary {
+            background: #111;
+            color: white;
+            border-color: #111;
+        }
+        
+        .btn-secondary {
+            color: #666;
+        }
+        
+        .btn-primary:hover {
+            background: #333;
+        }
+        
+        .btn-secondary:hover {
+            border-color: #111;
+            color: #111;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+            border-color: #dc3545;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .card {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 3rem;
+            padding: 2rem;
+        }
+        
+        .collection-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+            font-weight: 700;
+        }
+        
+        .collection-description {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #444;
+            margin-bottom: 2rem;
+        }
+        
+        .action-buttons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .section-heading {
+            font-family: 'Space Grotesk', sans-serif;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            letter-spacing: -0.02em;
+            color: #111;
+        }
+        
+        .breadcrumb {
+            display: flex;
+            list-style: none;
+            padding: 0;
+            margin-bottom: 2rem;
+        }
+        
+        .breadcrumb-item {
+            font-size: 0.9rem;
+        }
+        
+        .breadcrumb-item a {
+            color: #666;
+            text-decoration: none;
+        }
+        
+        .breadcrumb-item a:hover {
+            color: #111;
+        }
+        
+        .breadcrumb-item + .breadcrumb-item::before {
+            content: "/";
+            padding: 0 0.5rem;
+            color: #ccc;
+        }
+        
+        .breadcrumb-item.active {
+            color: #111;
+        }
+        
         .items-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 2rem;
         }
+        
         .item-card {
             background: white;
             transition: all 0.3s ease;
@@ -90,29 +172,71 @@
             overflow: hidden;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
+        
         .item-card:hover {
             transform: translateY(-4px);
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
+        
         .item-image {
             height: 320px;
             position: relative;
             overflow: hidden;
         }
+        
         .item-image img {
             width: 100%;
             height: 100%;
-            object-fit: scale-down;
+            object-fit: cover;
             transition: transform 0.5s ease;
         }
+        
+        .placeholder-image {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f1f1f1;
+            color: #999;
+        }
+        
         .item-details {
             padding: 1.5rem;
         }
+        
         .item-meta h3 {
-            margin: 0 0 0.5rem;
-            font-size: 1.1rem;
+            font-family: 'Space Grotesk', sans-serif;
+            margin: 0 0 0.75rem;
+            font-size: 1.2rem;
             font-weight: 600;
         }
+        
+        .item-meta span {
+            display: inline-block;
+            margin-right: 1rem;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .item-status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .item-status.available {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .item-status.unavailable {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
         .borrow-btn {
             position: absolute;
             bottom: 0;
@@ -129,11 +253,119 @@
             opacity: 0;
             transition: opacity 0.3s ease;
         }
+        
         .item-card:hover .borrow-btn {
             opacity: 1;
         }
+        
         .item-card:hover .item-image img {
             transform: scale(1.05);
+        }
+        
+        .image-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #999;
+        }
+        
+        .nav-actions {
+            display: flex;
+            gap: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>AIRDROBE</h1>
+            <div class="nav-actions">
+                {% if user.is_authenticated %}
+                    {% if user.user_type == 1 %}
+                        <a href="{% url 'librarian_page' %}" class="btn btn-secondary">Dashboard</a>
+                    {% else %}
+                        <a href="{% url 'patron_page' %}" class="btn btn-secondary">Dashboard</a>
+                    {% endif %}
+                    <a href="{% url 'browse' %}" class="btn btn-secondary">Browse Items</a>
+                    <a href="{% url 'logout' %}" class="btn btn-secondary">Exit</a>
+                {% else %}
+                    <a href="{% provider_login_url 'google' %}" class="btn btn-secondary">Sign In</a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'browse' %}">Browse</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ collection.name }}</li>
+            </ol>
+        </nav>
+        
+        <div class="card">
+            <h2 class="collection-title">{{ collection.name }}</h2>
+            <p class="collection-description">{{ collection.description }}</p>
+            <div class="action-buttons">
+                {% if user.is_authenticated and user.user_type == 1 %}
+                <a href="{% url 'librarian_page' %}" class="btn btn-secondary">Back to Dashboard</a>
+                {% else %}
+                <a href="{% url 'browse' %}" class="btn btn-secondary">Back to Browse</a>
+                {% endif %}
+                {% if user.is_authenticated and user.user_type == 1 %}
+                <form method="POST" action="{% url 'delete_collection' collection.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Delete Collection</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+
+        <h2 class="section-heading">Items in {{ collection.name }}</h2>
+        
+        <div class="items-grid">
+            {% for item in items %}
+            <div class="item-card" data-item-id="{{ item.id }}">
+                <div class="item-image">
+                    {% if item.s3_image_key %}
+                    <div class="image-container">
+                        <img class="item-img" data-item-id="{{ item.id }}" src="" alt="{{ item.name }}" style="display:none;">
+                        <div class="image-loading">
+                            <div style="width: 40px; height: 40px; border: 3px solid #eee; border-top: 3px solid #111; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="placeholder-image">No image</div>
+                    {% endif %}
+
+                    {% if item.available %}
+                    <a href="{% url 'item_detail' item.id %}" class="borrow-btn">View Details</a>
+                    {% endif %}
+                </div>
+                <div class="item-details">
+                    <div class="item-meta">
+                        <h3>{{ item.name }}</h3>
+                        <span class="item-category">{{ item.category }}</span>
+                        <span class="item-size">{{ item.get_size_display }}</span>
+                        <span class="item-status {% if item.available %}available{% else %}unavailable{% endif %}">
+                            {{ item.available|yesno:"Available,Unavailable" }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 0;">
+                <p style="color: #666; font-size: 1.1rem;">No items in this collection yet.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 

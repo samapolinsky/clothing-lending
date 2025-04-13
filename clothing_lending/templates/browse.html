@@ -110,6 +110,7 @@
                 
                 {% if collections %}
                     {% for collection in collections %}
+                    {% if collection.is_private == False %}
                     <div class="card collection-card" data-collection-id="{{ collection.id }}" data-type="collection">
                         <div class="collection-details">
                             <h3><a href="{% url 'collection_detail' collection.id %}">{{ collection.name }}</a></h3>
@@ -117,6 +118,25 @@
                             <span class="collection-meta">Created by: {{ collection.created_by.email}}</span>
                         </div>
                     </div>
+                    {% else %}
+                        {% if user.user_type == 1 %}
+                        <div class="card collection-card" data-collection-id="{{ collection.id }}" data-type="collection">
+                            <div class="collection-details">
+                                <h3><a href="{% url 'collection_detail' collection.id %}">{{ collection.name }}</a></h3>
+                                <p class="card-text">{{ collection.description }}</p>
+                                <span class="collection-meta">Created by: {{ collection.created_by.email}}</span>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="card collection-card" data-collection-id="{{ collection.id }}" data-type="collection">
+                            <div class="collection-details">
+                                <h3>{{ collection.name }}</h3>
+                                <p class="card-text">{{ collection.description }}</p>
+                                <span class="collection-meta">Created by: {{ collection.created_by.email}}</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endif %}
                     {% endfor %}
                 {% endif %}
                 
