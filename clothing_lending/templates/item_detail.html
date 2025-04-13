@@ -290,108 +290,6 @@
     </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <div class="row">
-            <div class="col-md-10 offset-md-1">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{% url 'browse' %}">Browse</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">{{ item.name }}</li>
-                    </ol>
-                </nav>
-                
-                <div class="card mb-4">
-                    <div class="row g-0">
-                        <div class="col-md-4">
-                            {% if item.s3_image_key %}
-                            <img id="item-image" src="" class="img-fluid rounded-start" alt="{{ item.name }}">
-                            <div id="image-loading" class="bg-light d-flex justify-content-center align-items-center" style="height: 300px;">
-                                <p class="text-muted">Loading image...</p>
-                            </div>
-                            {% else %}
-                            <div class="bg-light d-flex justify-content-center align-items-center" style="height: 300px;">
-                                <p class="text-muted">No image available</p>
-                            </div>
-                            {% endif %}
-                        </div>
-                        <div class="col-md-8">
-                            <div class="card-body">
-                                <h2 class="card-title">{{ item.name }}</h2>
-                                <p class="card-text">{{ item.description }}</p>
-                                <div class="row mb-3">
-                                    <div class="col-md-6">
-                                        <h5>Details</h5>
-                                        <ul class="list-unstyled">
-                                            <li><strong>Category:</strong> {{ item.category }}</li>
-                                            <li><strong>Size:</strong> {{ item.get_size_display }}</li>
-                                            <li><strong>Condition:</strong> {{ item.get_condition_display }}</li>
-                                            <li>
-                                                <strong>Status:</strong> 
-                                                {% if item.available %}
-                                                <span class="badge bg-success">Available</span>
-                                                {% else %}
-                                                <span class="badge bg-danger">Not Available</span>
-                                                {% endif %}
-                                            </li>
-                                            <li><strong>Collections:</strong>
-                                                <ul>
-                                                    {% for collection in item.collections.all %}
-                                                    <li>{{ collection.name }}</li>
-                                                    {% empty %}
-                                                    <li>No collections</li>
-                                                    {% endfor %}
-                                                </ul>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                
-                                <div class="d-flex justify-content-between">
-                                    {% if user.is_authenticated and user.user_type == 1 %}
-                                    <a href="{% url 'librarian_page' %}" class="btn btn-secondary">Back to Dashboard</a>
-                                    {% else %}
-                                    <a href="{% url 'browse' %}" class="btn btn-secondary">Back to Browse</a>
-                                    {% endif %}
-                                    
-                                    {% if user.is_authenticated and user.user_type == 2 and item.available %}
-                                    <!-- Future Borrow button would go here -->
-                                    <button class="btn btn-primary">Request to Borrow</button>
-                                    {% endif %}
-                                    
-                                    {% if user.is_authenticated and user.user_type == 1 %}
-                                    <!-- Librarian actions -->
-                                    <div>
-                                        <a href="#" class="btn btn-warning">Edit Item</a>
-                                        <form method="POST" action="{% url 'delete_item' item.id %}" class="d-inline">
-                                            {% csrf_token %}
-                                            <button type="submit" class="btn btn-danger">Delete Item</button>
-                                        </form>
-                                    </div>
-                                    {% endif %}
-                                </div>
-                                
-                                {% if user.is_authenticated %}
-                                <hr>
-                                <h5>Add to Collections</h5>
-
-                                {% if form.non_field_errors %}
-                                    <div class="alert alert-danger">
-                                        {% for error in form.non_field_errors %}
-                                            <p>{{ error }}</p>
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
-
-                                <form method="POST">
-                                    {% csrf_token %}
-                                    {{ form.as_p }}
-                                    <button type="submit" name="add_to_collection" class="btn btn-primary">Add to Collections</button>
-                                </form>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                </div>
     <header>
         <div class="header-content">
             <h1>AIRDROBE</h1>
@@ -420,13 +318,13 @@
         </nav>
 
         {% if messages %}
-        <div class="messages">
-            {% for message in messages %}
-            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %}">
-                {{ message }}
+            <div class="messages">
+                {% for message in messages %}
+                <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %}">
+                    {{ message }}
+                </div>
+                {% endfor %}
             </div>
-            {% endfor %}
-        </div>
         {% endif %}
 
         <div class="item-content">
@@ -503,15 +401,26 @@
                 {% if user.is_authenticated %}
                 <div class="form-section">
                     <h5>Add to Collections</h5>
+
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
                     <form method="POST">
                         {% csrf_token %}
                         <div class="form-group">
                             {{ form.as_p }}
                         </div>
+
                         <button type="submit" class="btn btn-primary">Add to Collection</button>
                     </form>
                 </div>
                 {% endif %}
+
             </div>
         </div>
     </div>
@@ -522,7 +431,7 @@
             100% { transform: rotate(360deg); }
         }
     </style>
-    
+
     {% if item.s3_image_key %}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -550,3 +459,254 @@
     {% endif %}
 </body>
 </html>
+
+<!--                <div class="card mb-4">-->
+<!--                    <div class="row g-0">-->
+<!--                        <div class="col-md-4">-->
+<!--                            {% if item.s3_image_key %}-->
+<!--                            <img id="item-image" src="" class="img-fluid rounded-start" alt="{{ item.name }}">-->
+<!--                            <div id="image-loading" class="bg-light d-flex justify-content-center align-items-center" style="height: 300px;">-->
+<!--                                <p class="text-muted">Loading image...</p>-->
+<!--                            </div>-->
+<!--                            {% else %}-->
+<!--                            <div class="bg-light d-flex justify-content-center align-items-center" style="height: 300px;">-->
+<!--                                <p class="text-muted">No image available</p>-->
+<!--                            </div>-->
+<!--                            {% endif %}-->
+<!--                        </div>-->
+<!--                        <div class="col-md-8">-->
+<!--                            <div class="card-body">-->
+<!--                                <h2 class="card-title">{{ item.name }}</h2>-->
+<!--                                <p class="card-text">{{ item.description }}</p>-->
+<!--                                <div class="row mb-3">-->
+<!--                                    <div class="col-md-6">-->
+<!--                                        <h5>Details</h5>-->
+<!--                                        <ul class="list-unstyled">-->
+<!--                                            <li><strong>Category:</strong> {{ item.category }}</li>-->
+<!--                                            <li><strong>Size:</strong> {{ item.get_size_display }}</li>-->
+<!--                                            <li><strong>Condition:</strong> {{ item.get_condition_display }}</li>-->
+<!--                                            <li>-->
+<!--                                                <strong>Status:</strong> -->
+<!--                                                {% if item.available %}-->
+<!--                                                <span class="badge bg-success">Available</span>-->
+<!--                                                {% else %}-->
+<!--                                                <span class="badge bg-danger">Not Available</span>-->
+<!--                                                {% endif %}-->
+<!--                                            </li>-->
+<!--                                            <li><strong>Collections:</strong>-->
+<!--                                                <ul>-->
+<!--                                                    {% for collection in item.collections.all %}-->
+<!--                                                    <li>{{ collection.name }}</li>-->
+<!--                                                    {% empty %}-->
+<!--                                                    <li>No collections</li>-->
+<!--                                                    {% endfor %}-->
+<!--                                                </ul>-->
+<!--                                            </li>-->
+<!--                                        </ul>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                                -->
+<!--                                <div class="d-flex justify-content-between">-->
+<!--                                    {% if user.is_authenticated and user.user_type == 1 %}-->
+<!--                                    <a href="{% url 'librarian_page' %}" class="btn btn-secondary">Back to Dashboard</a>-->
+<!--                                    {% else %}-->
+<!--                                    <a href="{% url 'browse' %}" class="btn btn-secondary">Back to Browse</a>-->
+<!--                                    {% endif %}-->
+<!--                                    -->
+<!--                                    {% if user.is_authenticated and user.user_type == 2 and item.available %}-->
+<!--                                    &lt;!&ndash; Future Borrow button would go here &ndash;&gt;-->
+<!--                                    <button class="btn btn-primary">Request to Borrow</button>-->
+<!--                                    {% endif %}-->
+<!--                                    -->
+<!--                                    {% if user.is_authenticated and user.user_type == 1 %}-->
+<!--                                    &lt;!&ndash; Librarian actions &ndash;&gt;-->
+<!--                                    <div>-->
+<!--                                        <a href="#" class="btn btn-warning">Edit Item</a>-->
+<!--                                        <form method="POST" action="{% url 'delete_item' item.id %}" class="d-inline">-->
+<!--                                            {% csrf_token %}-->
+<!--                                            <button type="submit" class="btn btn-danger">Delete Item</button>-->
+<!--                                        </form>-->
+<!--                                    </div>-->
+<!--                                    {% endif %}-->
+<!--                                </div>-->
+<!--                                -->
+<!--                                {% if user.is_authenticated %}-->
+<!--                                <hr>-->
+<!--                                <h5>Add to Collections</h5>-->
+
+<!--                                {% if form.non_field_errors %}-->
+<!--                                    <div class="alert alert-danger">-->
+<!--                                        {% for error in form.non_field_errors %}-->
+<!--                                            <p>{{ error }}</p>-->
+<!--                                        {% endfor %}-->
+<!--                                    </div>-->
+<!--                                {% endif %}-->
+
+<!--                                <form method="POST">-->
+<!--                                    {% csrf_token %}-->
+<!--                                    {{ form.as_p }}-->
+<!--                                    <button type="submit" name="add_to_collection" class="btn btn-primary">Add to Collections</button>-->
+<!--                                </form>-->
+<!--                                {% endif %}-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--    <header>-->
+<!--        <div class="header-content">-->
+<!--            <h1>AIRDROBE</h1>-->
+<!--            <div class="nav-actions">-->
+<!--                {% if user.is_authenticated %}-->
+<!--                    {% if user.user_type == 1 %}-->
+<!--                        <a href="{% url 'librarian_page' %}" class="btn btn-secondary">Dashboard</a>-->
+<!--                    {% else %}-->
+<!--                        <a href="{% url 'patron_page' %}" class="btn btn-secondary">Dashboard</a>-->
+<!--                    {% endif %}-->
+<!--                    <a href="{% url 'browse' %}" class="btn btn-secondary">Browse Items</a>-->
+<!--                    <a href="{% url 'logout' %}" class="btn btn-secondary">Exit</a>-->
+<!--                {% else %}-->
+<!--                    <a href="{% provider_login_url 'google' %}" class="btn btn-secondary">Sign In</a>-->
+<!--                {% endif %}-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </header>-->
+
+<!--    <div class="main-container">-->
+<!--        <nav aria-label="breadcrumb">-->
+<!--            <ol class="breadcrumb">-->
+<!--                <li class="breadcrumb-item"><a href="{% url 'browse' %}">Browse</a></li>-->
+<!--                <li class="breadcrumb-item active" aria-current="page">{{ item.name }}</li>-->
+<!--            </ol>-->
+<!--        </nav>-->
+
+<!--        {% if messages %}-->
+<!--        <div class="messages">-->
+<!--            {% for message in messages %}-->
+<!--            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %}">-->
+<!--                {{ message }}-->
+<!--            </div>-->
+<!--            {% endfor %}-->
+<!--        </div>-->
+<!--        {% endif %}-->
+
+<!--        <div class="item-content">-->
+<!--            <div class="item-image">-->
+<!--                {% if item.s3_image_key %}-->
+<!--                <div class="image-container">-->
+<!--                    <img id="item-image" src="" alt="{{ item.name }}" style="display:none;">-->
+<!--                    <div id="image-loading" class="d-flex justify-content-center align-items-center">-->
+<!--                        <div style="width: 50px; height: 50px; border: 3px solid #eee; border-top: 3px solid #111; border-radius: 50%; animation: spin 1s linear infinite;"></div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--                {% else %}-->
+<!--                <div class="image-container">-->
+<!--                    <p style="color: #999;">No image available</p>-->
+<!--                </div>-->
+<!--                {% endif %}-->
+<!--            </div>-->
+
+<!--            <div class="item-details">-->
+<!--                <h2 class="item-title">{{ item.name }}</h2>-->
+<!--                <p class="item-description">{{ item.description }}</p>-->
+
+<!--                <ul class="detail-list">-->
+<!--                    <li>-->
+<!--                        <strong>Category:</strong> {{ item.category }}-->
+<!--                    </li>-->
+<!--                    <li>-->
+<!--                        <strong>Size:</strong> {{ item.get_size_display }}-->
+<!--                    </li>-->
+<!--                    <li>-->
+<!--                        <strong>Condition:</strong> {{ item.get_condition_display }}-->
+<!--                    </li>-->
+<!--                    <li>-->
+<!--                        <strong>Status:</strong>-->
+<!--                        {% if item.available %}-->
+<!--                        <span class="badge badge-success">Available</span>-->
+<!--                        {% else %}-->
+<!--                        <span class="badge badge-danger">Not Available</span>-->
+<!--                        {% endif %}-->
+<!--                    </li>-->
+<!--                    <li>-->
+<!--                        <strong>Collections:</strong>-->
+<!--                        <ul class="collections-list">-->
+<!--                            {% for collection in item.collections.all %}-->
+<!--                            <li>{{ collection.name }}</li>-->
+<!--                            {% empty %}-->
+<!--                            <li>No collections</li>-->
+<!--                            {% endfor %}-->
+<!--                        </ul>-->
+<!--                    </li>-->
+<!--                </ul>-->
+
+<!--                <div class="action-buttons">-->
+<!--                    {% if user.is_authenticated and user.user_type == 1 %}-->
+<!--                    <a href="{% url 'librarian_page' %}" class="btn btn-secondary">Back to Dashboard</a>-->
+<!--                    <div>-->
+<!--                        <a href="#" class="btn btn-warning">Edit Item</a>-->
+<!--                        <form method="POST" action="/lending/items/{{ item.id }}/delete/" style="display: inline-block; margin-left: 0.5rem;">-->
+<!--                            {% csrf_token %}-->
+<!--                            <button type="submit" class="btn btn-danger">Delete Item</button>-->
+<!--                        </form>-->
+<!--                    </div>-->
+<!--                    {% else %}-->
+<!--                    <a href="{% url 'browse' %}" class="btn btn-secondary">Back to Browse</a>-->
+<!--                    {% if user.is_authenticated and user.user_type == 2 and item.available %}-->
+<!--                    <form method="POST" action="/lending/items/{{ item.id }}/request-borrow/">-->
+<!--                        {% csrf_token %}-->
+<!--                        <button type="submit" class="btn btn-primary">Request to Borrow</button>-->
+<!--                    </form>-->
+<!--                    {% endif %}-->
+<!--                    {% endif %}-->
+<!--                </div>-->
+
+<!--                {% if user.is_authenticated %}-->
+<!--                <div class="form-section">-->
+<!--                    <h5>Add to Collections</h5>-->
+<!--                    <form method="POST">-->
+<!--                        {% csrf_token %}-->
+<!--                        <div class="form-group">-->
+<!--                            {{ form.as_p }}-->
+<!--                        </div>-->
+<!--                        <button type="submit" class="btn btn-primary">Add to Collection</button>-->
+<!--                    </form>-->
+<!--                </div>-->
+<!--                {% endif %}-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
+
+<!--    <style>-->
+<!--        @keyframes spin {-->
+<!--            0% { transform: rotate(0deg); }-->
+<!--            100% { transform: rotate(360deg); }-->
+<!--        }-->
+<!--    </style>-->
+<!--    -->
+<!--    {% if item.s3_image_key %}-->
+<!--    <script>-->
+<!--        document.addEventListener('DOMContentLoaded', function() {-->
+<!--            fetch('/lending/items/{{ item.id }}/presigned-url/')-->
+<!--                .then(response => response.json())-->
+<!--                .then(data => {-->
+<!--                    if (data.success) {-->
+<!--                        const img = document.getElementById('item-image');-->
+<!--                        img.onload = function() {-->
+<!--                            document.getElementById('image-loading').style.display = 'none';-->
+<!--                            img.style.display = 'block';-->
+<!--                        };-->
+<!--                        img.src = data.url;-->
+<!--                    } else {-->
+<!--                        console.error('Failed to get presigned URL:', data.error);-->
+<!--                        document.getElementById('image-loading').innerHTML = 'Failed to load image';-->
+<!--                    }-->
+<!--                })-->
+<!--                .catch(error => {-->
+<!--                    console.error('Error fetching presigned URL:', error);-->
+<!--                    document.getElementById('image-loading').innerHTML = 'Failed to load image';-->
+<!--                });-->
+<!--        });-->
+<!--    </script>-->
+<!--    {% endif %}-->
+<!--</body>-->
+<!--</html>-->
