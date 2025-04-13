@@ -5,6 +5,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from django.contrib import messages
 import uuid
+from django.db.models import Q
 from django.utils import timezone
 
 from clothing_lending.models import User, Patron, Librarian, Collection, Item, Lending
@@ -34,21 +35,21 @@ def is_librarian(user):
 def librarian_page(request):
     # Get the librarian instance for the current user
     librarian = get_object_or_404(Librarian, user=request.user)
-    
-    # Show only collections owned by this librarian 
+
+    # Show only collections owned by this librarian
     collections = Collection.objects.filter(created_by=request.user)
-    
+
     # Show only items created by this librarian
     recent_items = Item.objects.filter(created_by=librarian).order_by('-created_at')
-    
+
     promote_form = PromoteUserForm()
-    
+
     # Show only lending requests for items created by this librarian
     pending_requests = Lending.objects.filter(
         item__created_by=librarian,
         status='PENDING'
     ).order_by('-request_date')
-    
+
     active_lendings = Lending.objects.filter(
         item__created_by=librarian,
         status='APPROVED'
@@ -67,6 +68,26 @@ def librarian_page(request):
 
 def is_patron(user):
     return user.is_authenticated and user.user_type == 2
+
+
+# # @login_required
+# @user_passes_test(is_patron)
+# def patron_page(request):
+#     """
+#     View for the patron dashboard
+#     """
+#     # Get all available items
+#     items = Item.objects.filter(available=True)
+
+#     # Get a list of all categories for filtering
+#     categories = Item.objects.values_list('category', flat=True).distinct()
+
+#     context = {
+#         'items': items,
+#         'categories': categories
+#     }
+
+#     return render(request, 'patron/page.html', context)
 
 
 def logout_view(request):
@@ -117,16 +138,26 @@ def google_oauth_callback(request):
 
 def browse(request):
     """
-	View to browse all available items
-	"""
+    View to browse all available items
+    """
     # Get all available items
-    items = Item.objects.filter(available=True)
+    # items = Item.objects.filter(available=True)
 
     # Get all collections
-    collections = Collection.objects.all()
+    if request.user.is_authenticated and request.user.user_type == 1:
+        collections = Collection.objects.all()
+        items = Item.objects.filter(available=True)
+    if request.user.is_authenticated and request.user.user_type == 2:
+        try:
+            patron = request.user.patron
+            collections = Collection.objects.filter(Q(is_private=False) | Q(allowed_patrons=patron))
+            items = Item.objects.filter(Q(available=True) and (Q(private_collection=False) | Q(collections__allowed_patrons=patron)))
+        except Patron.DoesNotExist:
+            collections = Collection.objects.filter(is_private=False)
 
     if not request.user.is_authenticated:
         collections = Collection.objects.filter(is_private=False)
+        items = Item.objects.filter(Q(available=True) and Q(private_collection=False))
 
     # Get a list of all categories for filtering
     categories = Item.objects.values_list('category', flat=True).distinct()
@@ -147,6 +178,7 @@ def add_collection(request):
             collection = form.save(commit=False)
             collection.created_by = request.user
             collection.save()
+            form.save_m2m()
             messages.success(request, 'Collection created successfully!')
             if request.user.user_type == 1:
                 return redirect('librarian_page')
@@ -156,6 +188,14 @@ def add_collection(request):
         form = CollectionForm()
 
     return render(request, 'librarian/add_collection.html', {'form': form})
+
+
+def user_can_view_collection(user, collection):
+    if not collection.is_private:
+        return True
+    if user.groups.filter(name='Librarians').exists():
+        return True
+    return collection.allowed_patrons.filter(id=user.id).exists()
 
 
 @user_passes_test(is_librarian)
@@ -220,8 +260,10 @@ def add_item(request):
 
 def item_detail(request, item_id):
     item = get_object_or_404(Item, pk=item_id)
-    if request.method == 'POST': # removed  and 'add_to_collection' in request.POST to see if it works
-        form = AddItemToCollectionForm(request.POST, user=request.user if request.user.is_authenticated else None)
+    if request.method == 'POST' and 'add_to_collection' in request.POST:
+        # form = AddItemToCollectionForm(request.POST, user=request.user if request.user.is_authenticated else None)
+        form = AddItemToCollectionForm(request.POST, user=request.user if request.user.is_authenticated else None, item=item)
+
         if form.is_valid():
             collections = form.cleaned_data['collections']
             for collection in collections:
@@ -230,8 +272,11 @@ def item_detail(request, item_id):
             return redirect('item_detail', item_id=item_id)
     else:
         # if request.user.is_authenticated:
-        # print("entered here")
-        form = AddItemToCollectionForm(user=request.user)
+        # form = AddItemToCollectionForm(user=request.user)
+        form = AddItemToCollectionForm(
+            user=request.user if request.user.is_authenticated else None,
+            item=item
+        )
 
     return render(request, 'item_detail.html', {'item': item, 'form': form})
 
@@ -527,18 +572,18 @@ def delete_collection(request, collection_id):
 def patron_page(request):
     patron, created = Patron.objects.get_or_create(user=request.user)
     collections = Collection.objects.filter(created_by=request.user)  # Fetch collections created by the patron
-    
+
     # Get all lending requests for this patron
     pending_requests = Lending.objects.filter(
         borrower=patron,
         status='PENDING'
     ).order_by('-request_date')
-    
+
     approved_items = Lending.objects.filter(
         borrower=patron,
         status='APPROVED'
     ).order_by('-approved_date')
-    
+
     borrowing_history = Lending.objects.filter(
         borrower=patron,
         status__in=['RETURNED', 'REJECTED']
@@ -554,40 +599,41 @@ def patron_page(request):
 
     return render(request, 'patron/page.html', context)
 
+
 def update_patron_profile(request):
     patron, created = Patron.objects.get_or_create(user=request.user)
     if request.method == 'POST':
         form = PatronProfileForm(request.POST, request.FILES, instance=patron)
         print(f"Form submitted. Files in request: {request.FILES}")
-        
+
         if form.is_valid():
             print("Form is valid")
-            
+
             # Handle profile picture upload to S3
             if 'profile_picture' in request.FILES:
                 file_obj = request.FILES['profile_picture']
                 print(f"Profile picture found: {file_obj.name}")
                 print(f"File size: {file_obj.size}")
                 print(f"Content type: {file_obj.content_type}")
-                
+
                 try:
                     from clothing_lending.s3_utils import upload_file_to_s3
                     # Add more specific object name
                     object_name = f"profile_pics/{request.user.id}/{uuid.uuid4()}_{file_obj.name}"
                     print(f"Attempting to upload to S3 with object_name: {object_name}")
-                    
+
                     s3_upload = upload_file_to_s3(
-                        file_obj, 
+                        file_obj,
                         object_name=object_name
                     )
                     print(f"S3 upload result: {s3_upload}")
-                    
+
                     if s3_upload:
                         # Delete old profile picture from S3 if it exists
                         if patron.s3_profile_picture_key:
                             from clothing_lending.s3_utils import delete_file_from_s3
                             delete_file_from_s3(patron.s3_profile_picture_key)
-                        
+
                         # Update patron with new S3 info
                         patron.profile_picture = s3_upload['url']
                         patron.s3_profile_picture_key = s3_upload['key']
@@ -615,6 +661,7 @@ def update_patron_profile(request):
     context = {'form': form, 'patron': patron}
     return render(request, 'patron/update_profile.html', context)
 
+
 @user_passes_test(is_patron)
 def remove_profile_picture(request):
     patron, created = Patron.objects.get_or_create(user=request.user)
@@ -634,33 +681,33 @@ def remove_profile_picture(request):
 @login_required
 def request_borrow(request, item_id):
     print(f"request_borrow view called with item_id: {item_id}")  # Debug print
-    
+
     if request.method == 'POST':
         print("POST request received")  # Debug print
         try:
             item = get_object_or_404(Item, pk=item_id)
             patron = get_object_or_404(Patron, user=request.user)
-            
+
             print(f"Found item: {item.name} and patron: {patron}")  # Debug print
-            
+
             # Check if item is available
             if not item.available:
                 messages.error(request, 'This item is not available for borrowing.')
                 return redirect(f'/lending/items/{item_id}/')
-                
+
             # Check if user already has a pending or approved request for this item
             existing_request = Lending.objects.filter(
                 item=item,
                 borrower=patron,
                 status__in=['PENDING', 'APPROVED']
             ).exists()
-            
+
             print(f"Existing request check: {existing_request}")  # Debug print
-            
+
             if existing_request:
                 messages.warning(request, 'You already have a pending or approved request for this item.')
                 return redirect(f'/lending/items/{item_id}/')
-                
+
             # Create new lending request
             lending = Lending.objects.create(
                 item=item,
@@ -668,37 +715,37 @@ def request_borrow(request, item_id):
                 status='PENDING',
                 request_date=timezone.now()
             )
-            
+
             print(f"Created new lending request: {lending.id}")  # Debug print
-            
+
             # Update item availability
             item.available = False
             item.save()
-            
+
             messages.success(request, 'Your borrow request has been submitted and is pending approval.')
             return redirect(f'/lending/items/{item_id}/')
-            
+
         except Exception as e:
             print(f"Error in request_borrow: {str(e)}")  # Debug print
             import traceback
             traceback.print_exc()
             messages.error(request, f'An error occurred: {str(e)}')
             return redirect(f'/lending/items/{item_id}/')
-    
+
     return redirect(f'/lending/items/{item_id}/')
 
 @user_passes_test(is_librarian)
 def manage_lending_request(request, lending_id):
     lending = get_object_or_404(Lending, pk=lending_id)
     librarian = get_object_or_404(Librarian, user=request.user)
-    
+
     # Check if the current librarian is the creator of the item
     if lending.item.created_by != librarian:
         messages.error(request, "You don't have permission to manage this lending request. Only the librarian who created the item can approve or reject requests for it.")
         return redirect('/lending/librarian/page/')
-    
+
     action = request.POST.get('action')
-    
+
     if action == 'approve':
         lending.status = 'APPROVED'
         lending.approved_date = timezone.now()
@@ -714,7 +761,7 @@ def manage_lending_request(request, lending_id):
         lending.item.available = True
         lending.item.save()
         messages.success(request, f'{lending.item.name} has been marked as returned.')
-    
+
     lending.save()
     return redirect('/lending/librarian/page/')
 

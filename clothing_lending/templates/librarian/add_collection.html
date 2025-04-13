@@ -15,7 +15,7 @@
             min-height: 100vh;
             color: #111;
         }
-        
+
         header {
             background: #111;
             padding: 2rem 0;
@@ -23,7 +23,7 @@
             top: 0;
             z-index: 1000;
         }
-        
+
         .header-content {
             max-width: 1400px;
             margin: 0 auto;
@@ -32,7 +32,7 @@
             justify-content: space-between;
             align-items: center;
         }
-        
+
         .header-content h1 {
             font-family: 'Space Grotesk', sans-serif;
             color: white;
@@ -42,13 +42,13 @@
             font-weight: 700;
             letter-spacing: -0.02em;
         }
-        
+
         .main-container {
             max-width: 800px;
             margin: 3rem auto;
             padding: 0 2rem;
         }
-        
+
         .page-title {
             font-family: 'Space Grotesk', sans-serif;
             font-size: 2rem;
@@ -56,7 +56,7 @@
             letter-spacing: -0.02em;
             font-weight: 700;
         }
-        
+
         .card {
             background: white;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
@@ -71,21 +71,21 @@
             justify-content: space-between;
             align-items: center;
         }
-        
+
         .card-body {
             padding: 2rem;
         }
-        
+
         .form-group {
             margin-bottom: 1.5rem;
         }
-        
+
         .form-label {
             display: block;
             margin-bottom: 0.75rem;
             font-weight: 500;
         }
-        
+
         .form-control {
             display: block;
             width: 100%;
@@ -95,12 +95,12 @@
             font-family: 'Inter', sans-serif;
             box-sizing: border-box;
         }
-        
+
         textarea.form-control {
             min-height: 120px;
             resize: vertical;
         }
-        
+
         select.form-control {
             appearance: none;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23666' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
@@ -108,29 +108,29 @@
             background-repeat: no-repeat;
             padding-right: 2.5rem;
         }
-        
+
         .form-text {
             color: #666;
             font-size: 0.85rem;
             margin-top: 0.5rem;
         }
-        
+
         .form-check {
             display: flex;
             align-items: center;
             margin-bottom: 1.5rem;
         }
-        
+
         .form-check-input {
             margin-right: 0.75rem;
             width: 1.25rem;
             height: 1.25rem;
         }
-        
+
         .form-check-label {
             font-weight: 500;
         }
-        
+
         .btn {
             background: none;
             border: 1px solid #ddd;
@@ -143,33 +143,33 @@
             display: inline-block;
             text-align: center;
         }
-        
+
         .btn-primary {
             background: #111;
             color: white;
             border-color: #111;
         }
-        
+
         .btn-secondary {
             color: #666;
         }
-        
+
         .btn-primary:hover {
             background: #333;
         }
-        
+
         .btn-secondary:hover {
             border-color: #111;
             color: #111;
         }
-        
+
         .form-actions {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-top: 2rem;
         }
-        
+
         .alert {
             padding: 1.5rem;
             border-radius: 4px;
@@ -177,19 +177,19 @@
             background: #d4edda;
             color: #155724;
         }
-        
+
         .text-danger {
             color: #dc3545;
             font-size: 0.85rem;
             margin-top: 0.5rem;
         }
-        
+
         .form-row {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 1.5rem;
         }
-        
+
         .nav-actions {
             display: flex;
             gap: 1rem;
@@ -253,9 +253,32 @@
                                 </div>
                                 {% endif %}
                             </div>
+
+                            {% if user.is_authenticated and user.user_type == 1 %}
+                                <div class="mb-3 form-check">
+                                    {{ form.is_private }}
+                                    <label class="form-check-label" for="{{ form.is_private.id_for_label }}">
+                                        Private Collection
+                                    </label>
+                                </div>
+
+                                <div id="allowed-patrons-box" class="mb-3" style="display: none;">
+                                    <label class="form-label" for="{{ form.allowed_patrons.id_for_label }}">Allowed Patrons</label>
+                                    {{ form.allowed_patrons }}
+                                    {% if form.allowed_patrons.errors %}
+                                    <div class="text-danger">{{ form.allowed_patrons.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+
                             <br>
                             <div class="d-flex justify-content-between">
                                 <button type="submit" class="btn btn-primary">Create Collection</button>
+                                {% if user.is_authenticated and user.user_type == 1 %}
+                                    <a href="{% url 'librarian_page' %}" class="btn btn-secondary">Back to Dashboard</a>
+                                {% elif user.is_authenticated and user.user_type == 2 %}
+                                    <a href="{% url 'patron_page' %}" class="btn btn-secondary">Back to Dashboard</a>
+                                {% endif %}
                             </div>
                         </form>
                     </div>
@@ -264,5 +287,25 @@
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const isPrivateCheckbox = document.getElementById("{{ form.is_private.id_for_label }}");
+            const patronsBox = document.getElementById("allowed-patrons-box");
+
+            function togglePatronBox() {
+                if (isPrivateCheckbox.checked) {
+                    patronsBox.style.display = "block";
+                } else {
+                    patronsBox.style.display = "none";
+                }
+            }
+
+            // Run on load in case form was submitted with errors
+            togglePatronBox();
+
+            // Run every time the checkbox is toggled
+            isPrivateCheckbox.addEventListener("change", togglePatronBox);
+        });
+    </script>
 </body>
 </html> 
