@@ -1,40 +1,45 @@
 from django.urls import path, include
 from django.views.generic import TemplateView
 from django.contrib.auth.views import LogoutView
+from django.shortcuts import redirect
+from django.contrib import admin
+
+
 
 # Import all views directly 
 from .views import (
     # Basic views
     index, catalog, checkout, browse,
-    
+
     # Authentication views
     logout_view,
-    
+
     # Librarian views
     librarian_page, promote_user,
-    
+
     # Patron views
     patron_page, update_patron_profile, remove_profile_picture,
-    
+
     # Collection management
     add_collection, collection_detail, delete_collection,
-    
+
     # Item management
     add_item, item_detail, delete_item, request_borrow,
-    
+
     # Lending management
     manage_lending_request,
-    
+
     # Debug & S3 helpers
     test_s3_connection, get_presigned_url, test_s3_upload, test_s3_permissions,
-    
+
     # Test views
     test_view
 )
 
 urlpatterns = [
     # Basic routes
-    path('', TemplateView.as_view(template_name="index.html")),
+    path('admin/', admin.site.urls),
+    path('', TemplateView.as_view(template_name="index.html"), name='home'),
     path("catalog/", catalog, name="catalog"),
     path("checkout/", checkout, name="checkout"),
     path('browse/', browse, name='browse'),
