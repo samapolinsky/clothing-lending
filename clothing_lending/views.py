@@ -593,12 +593,16 @@ def patron_page(request):
     ).order_by('-request_date')[:10]  # Show last 10 items
 
     # Now get invites!
-    
+    pending_invites = Invite.objects.filter(
+        requester=patron,
+        status='PENDING'
+    ).order_by('-request_date')
 
     context = {
         'collections': collections,
         'patron': patron,
         'pending_requests': pending_requests,
+        'pending_invites': pending_invites,
         'approved_items': approved_items,
         'borrowing_history': borrowing_history,
     }
