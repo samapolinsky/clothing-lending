@@ -144,7 +144,7 @@
                                 <br>
                                 <br>
                                 {% if user.is_authenticated and user.user_type == 2 %}
-                                <form method="POST" action="">
+                                <form method="POST" action="/lending/collections/{{ collection.id }}/request-invite/">
                                     {% csrf_token %}
                                     <button type="submit" class="btn btn-primary">Request Access</button>
                                 </form>

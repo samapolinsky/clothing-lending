@@ -54,7 +54,7 @@ urlpatterns = [
     # Collection management routes
     path('collections/<uuid:collection_id>/', collection_detail, name='collection_detail'),
     path('collections/<uuid:collection_id>/delete/', delete_collection, name='delete_collection'),
-    path('collections/<uuid:collection_id>/request-invite', request_invite, name='request_invite'),
+    path('collections/<uuid:collection_id>/request-invite/', request_invite, name='request_invite'),
     path('librarian/collections/add/', add_collection, name='add_collection'),
     path('patron/collections/add/', add_collection, name='patron_add_collection'),  # Allow patrons to add collections
     

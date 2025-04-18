@@ -592,6 +592,9 @@ def patron_page(request):
         status__in=['RETURNED', 'REJECTED']
     ).order_by('-request_date')[:10]  # Show last 10 items
 
+    # Now get invites!
+    
+
     context = {
         'collections': collections,
         'patron': patron,
