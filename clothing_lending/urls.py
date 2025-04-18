@@ -67,7 +67,7 @@ urlpatterns = [
     
     # Lending management routes
     path('lending/<int:lending_id>/manage/', manage_lending_request, name='manage_lending_request'),
-    path('invite/<int:invite_id>/manage/', manage_invite, name='manage_invite'),
+    path('lending/<int:invite_id>/manage/', manage_invite, name='manage_invite'),
     
     # Librarian management routes
     path('librarian/promote/', promote_user, name='promote_user'),

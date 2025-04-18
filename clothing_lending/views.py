@@ -55,12 +55,19 @@ def librarian_page(request):
         status='APPROVED'
     ).order_by('-approved_date')
 
+    # Finally, show pending invites!
+    pending_invites = Invite.objects.filter(
+        collection__created_by=librarian,
+        status='PENDING'
+    ).order_by('-request_date')
+
     context = {
         'collections': collections,
         'recent_items': recent_items,
         'form': promote_form,
         'pending_requests': pending_requests,
-        'active_lendings': active_lendings
+        'active_lendings': active_lendings,
+        'pending_invites': pending_invites
     }
 
     return render(request, 'librarian/page.html', context)
