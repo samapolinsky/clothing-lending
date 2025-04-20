@@ -57,7 +57,7 @@ def librarian_page(request):
 
     # Finally, show pending invites!
     pending_invites = Invite.objects.filter(
-        collection__created_by=librarian,
+        collection__created_by=request.user,
         status='PENDING'
     ).order_by('-request_date')
 
