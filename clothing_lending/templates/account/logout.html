@@ -1,0 +1,85 @@
+{% load i18n %}
+{% load allauth %}
+<!DOCTYPE html>
+<html lang="en">
+<meta charset="UTF-8">
+<title>Logged Out</title>
+<style>
+    body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        font-family: 'Inter', sans-serif;
+        background-color: #f8f9fa;
+    }
+    .logout-container {
+        text-align: center;
+        background: white;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    button.logout-btn {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: 10px;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 5px;
+        text-decoration: none;
+        font-size: 1rem;
+        width: 250px;
+        align-items: center;
+        vertical-align: middle;
+        background: black;
+        color: white;
+        transition: 0.3s;
+    }
+    button.logout-btn:hover {
+        background: grey;
+        cursor: pointer;
+    }
+</style>
+
+    <div class="logout-container">
+        <h1>Are you sure you want to sign out?</h1>
+        <p>Thanks for visiting Clothing Lending!</p>
+        {% url 'account_logout' as action_url %}
+        {% element form method="post" action=action_url no_visible_fields=True %}
+            {% slot body %}
+                {% csrf_token %}
+                {{ redirect_field }}
+            {% endslot %}
+            {% slot actions %}
+                <button type="submit" class="logout-btn">Sign Out</button>
+            {% endslot %}
+        {% endelement %}
+    </div>
+</html>
+
+<!--{% load allauth i18n %}-->
+<!--{% block head_title %}-->
+<!--{% trans "Sign Out" %}-->
+<!--{% endblock head_title %}-->
+<!--{% block content %}-->
+<!--{% element h1 %}-->
+<!--{% trans "Sign Out" %}-->
+<!--{% endelement %}-->
+<!--{% element p %}-->
+<!--{% trans 'Are you sure you want to sign out?' %}-->
+<!--{% endelement %}-->
+<!--{% url 'account_logout' as action_url %}-->
+<!--{% element form method="post" action=action_url no_visible_fields=True %}-->
+<!--{% slot body %}-->
+<!--{% csrf_token %}-->
+<!--{{ redirect_field }}-->
+<!--{% endslot %}-->
+<!--{% slot actions %}-->
+<!--{% element button type="submit" %}-->
+<!--{% trans 'Sign Out' %}-->
+<!--{% endelement %}-->
+<!--{% endslot %}-->
+<!--{% endelement %}-->
+<!--{% endblock content %}-->
