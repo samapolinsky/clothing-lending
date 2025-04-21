@@ -10,28 +10,31 @@ from django.contrib import admin
 from .views import (
     # Basic views
     index, catalog, checkout, browse,
-
+    
     # Authentication views
     logout_view,
-
+    
     # Librarian views
     librarian_page, promote_user,
-
+    
     # Patron views
     patron_page, update_patron_profile, remove_profile_picture,
-
+    
     # Collection management
-    add_collection, collection_detail, delete_collection,
-
+    add_collection, collection_detail, delete_collection, request_invite,
+    
     # Item management
     add_item, item_detail, delete_item, request_borrow,
-
+    
     # Lending management
     manage_lending_request,
 
+    # Invite management
+    manage_invite,
+
     # Debug & S3 helpers
     test_s3_connection, get_presigned_url, test_s3_upload, test_s3_permissions,
-
+    
     # Test views
     test_view
 )
@@ -56,6 +59,7 @@ urlpatterns = [
     # Collection management routes
     path('collections/<uuid:collection_id>/', collection_detail, name='collection_detail'),
     path('collections/<uuid:collection_id>/delete/', delete_collection, name='delete_collection'),
+    path('collections/<uuid:collection_id>/request-invite/', request_invite, name='request_invite'),
     path('librarian/collections/add/', add_collection, name='add_collection'),
     path('patron/collections/add/', add_collection, name='patron_add_collection'),  # Allow patrons to add collections
     
@@ -68,7 +72,8 @@ urlpatterns = [
     
     # Lending management routes
     path('lending/<int:lending_id>/manage/', manage_lending_request, name='manage_lending_request'),
-    
+    path('lending/<int:invite_id>/manage/', manage_invite, name='manage_invite'),
+
     # Librarian management routes
     path('librarian/promote/', promote_user, name='promote_user'),
     

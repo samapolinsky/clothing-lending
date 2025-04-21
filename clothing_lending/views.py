@@ -8,7 +8,7 @@ import uuid
 from django.db.models import Q
 from django.utils import timezone
 
-from clothing_lending.models import User, Patron, Librarian, Collection, Item, Lending
+from clothing_lending.models import User, Patron, Librarian, Collection, Item, Lending, Invite
 from clothing_lending.forms import CollectionForm, ItemForm, PromoteUserForm, AddItemToCollectionForm, PatronProfileForm
 from clothing_lending.s3_utils import upload_file_to_s3, get_s3_client, generate_presigned_url, delete_file_from_s3
 
@@ -55,12 +55,19 @@ def librarian_page(request):
         status='APPROVED'
     ).order_by('-approved_date')
 
+    # Finally, show pending invites!
+    pending_invites = Invite.objects.filter(
+        collection__created_by=request.user,
+        status='PENDING'
+    ).order_by('-request_date')
+
     context = {
         'collections': collections,
         'recent_items': recent_items,
         'form': promote_form,
         'pending_requests': pending_requests,
-        'active_lendings': active_lendings
+        'active_lendings': active_lendings,
+        'pending_invites': pending_invites
     }
 
     return render(request, 'librarian/page.html', context)
@@ -574,9 +581,9 @@ def delete_collection(request, collection_id):
 @user_passes_test(is_patron)
 def patron_page(request):
     patron, created = Patron.objects.get_or_create(user=request.user)
-    collections = Collection.objects.filter(created_by=request.user)  # Fetch collections created by the patron
+    collections = Collection.objects.filter(Q(created_by=request.user) | Q(allowed_patrons=patron))  # Fetch collections created by the patron
 
-    # Get all lending requests for this patron
+    # Get all lending requests for this 
     pending_requests = Lending.objects.filter(
         borrower=patron,
         status='PENDING'
@@ -592,10 +599,17 @@ def patron_page(request):
         status__in=['RETURNED', 'REJECTED']
     ).order_by('-request_date')[:10]  # Show last 10 items
 
+    # Now get invites!
+    pending_invites = Invite.objects.filter(
+        requester=patron,
+        status='PENDING'
+    ).order_by('-request_date')
+
     context = {
         'collections': collections,
         'patron': patron,
         'pending_requests': pending_requests,
+        'pending_invites': pending_invites,
         'approved_items': approved_items,
         'borrowing_history': borrowing_history,
     }
@@ -737,6 +751,63 @@ def request_borrow(request, item_id):
 
     return redirect(f'/lending/items/{item_id}/')
 
+# alrighty, here's how to try inviting users to a private collection
+@login_required
+def request_invite(request, collection_id):
+    print(f"request_invite view called with collection_id: {collection_id}")  # Debug print
+
+    if request.method == 'POST':
+        print("POST request received")  # Debug print
+        try:
+            collection = get_object_or_404(Collection, pk=collection_id)
+            patron = get_object_or_404(Patron, user=request.user)
+
+            print(f"Found collection: {collection.name} and patron: {patron}")  # Debug print
+
+            # Check if item is available
+            #if not item.available:
+                #messages.error(request, 'This item is not available for borrowing.')
+                #return redirect(f'/lending/items/{item_id}/')
+
+            # Check if user already has a pending or approved request for this item
+            existing_request = Invite.objects.filter(
+                collection=collection,
+                requester=patron,
+                status__in=['PENDING', 'APPROVED']
+            ).exists()
+
+            print(f"Existing request check: {existing_request}")  # Debug print
+
+            if existing_request:
+                messages.warning(request, 'You already have a pending or approved request to view this collection.')
+                return redirect(f'/lending/browse/')
+
+            # Create new lending request
+            invite = Invite.objects.create(
+                collection=collection,
+                requester=patron,
+                status='PENDING',
+                request_date=timezone.now()
+            )
+
+            print(f"Created new invite: {invite.id}")  # Debug print
+
+            # Update item availability
+            #item.available = False
+            #item.save()
+
+            messages.success(request, 'Your invite has been submitted and is pending approval.')
+            return redirect(f'/lending/browse/')
+
+        except Exception as e:
+            print(f"Error in request_invite: {str(e)}")  # Debug print
+            import traceback
+            traceback.print_exc()
+            messages.error(request, f'An error occurred: {str(e)}')
+            return redirect(f'/lending/browse/')
+
+    return redirect(f'/lending/browse/')
+
 @user_passes_test(is_librarian)
 def manage_lending_request(request, lending_id):
     lending = get_object_or_404(Lending, pk=lending_id)
@@ -766,6 +837,32 @@ def manage_lending_request(request, lending_id):
         messages.success(request, f'{lending.item.name} has been marked as returned.')
 
     lending.save()
+    return redirect('/lending/librarian/page/')
+
+# Now to approve patron invites to private collection
+@user_passes_test(is_librarian)
+def manage_invite(request, invite_id):
+    invite = get_object_or_404(Invite, pk=invite_id)
+    librarian = get_object_or_404(Librarian, user=request.user)
+
+    # Check if the current librarian is the creator of the item
+    if invite.collection.created_by != librarian:
+        messages.error(request, "You don't have permission to invite. Only the librarian who created the collection can invite users.")
+        return redirect('/lending/librarian/page/')
+
+    action = request.POST.get('action')
+
+    if action == 'approve':
+        invite.status = 'APPROVED'
+        invite.approved_date = timezone.now()
+        invite.collection.allowed_patrons.add(invite.requester)
+        invite.collection.save()
+        messages.success(request, f'{invite.requester} invited to {invite.collection}.')
+    elif action == 'reject':
+        invite.status = 'REJECTED'
+        messages.success(request, f'Invite to {invite.collection} has been rejected.')
+
+    invite.save()
     return redirect('/lending/librarian/page/')
 
 # Add a simple test view that always works

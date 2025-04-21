@@ -379,6 +379,42 @@
 
             <div class="card">
                 <div class="card-header">
+                    <h4>Pending Invites</h4>
+                </div>
+                <div class="card-body">
+                    {% if pending_invites %}
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Collection</th>
+                                        <th>Requested On</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for invite in pending_invites %}
+                                    <tr>
+                                        <td>
+                                            {{ invite.collection.name }}
+                                        </td>
+                                        <td>{{ invite.request_date|date:"M d, Y" }}</td>
+                                        <td><span class="badge badge-primary">Pending</span></td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-secondary">
+                            You have no pending invites.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
                     <h4>Currently Borrowed Items</h4>
                 </div>
                 <div class="card-body">

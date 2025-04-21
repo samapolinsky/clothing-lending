@@ -425,6 +425,55 @@
 
             <div class="card">
                 <div class="card-header">
+                    <h4>Pending Collection Invites</h4>
+                </div>
+                <div class="card-body">
+                    {% if pending_invites %}
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Collection</th>
+                                        <th>Borrower</th>
+                                        <th>Request Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for invite in pending_invites %}
+                                    <tr>
+                                        <td>
+                                            <a href="{% url 'collection_detail' invite.collection.id %}" class="title-link">{{ invite.collection.name }}</a>
+                                        </td>
+                                        <td>{{ invite.requester.user.username }}</td>
+                                        <td>{{ invite.request_date|date:"M d, Y" }}</td>
+                                        <td class="lending-action-buttons">
+                                            <form method="POST" action="{% url 'manage_invite' invite.id %}" class="d-inline">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="approve">
+                                                <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                                            </form>
+                                            <form method="POST" action="{% url 'manage_invite' invite.id %}" class="d-inline">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="reject">
+                                                <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-secondary">
+                            No pending invites for your collections.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
                     <h4>Currently Borrowed Items</h4>
                 </div>
                 <div class="card-body">
