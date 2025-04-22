@@ -846,7 +846,9 @@ def manage_invite(request, invite_id):
     librarian = get_object_or_404(Librarian, user=request.user)
 
     # Check if the current librarian is the creator of the item
-    if invite.collection.created_by != librarian:
+    if invite.collection.created_by.username != librarian.user.username:
+        #print(invite.collection.created_by)
+        #print(librarian)
         messages.error(request, "You don't have permission to invite. Only the librarian who created the collection can invite users.")
         return redirect('/lending/librarian/page/')
 
@@ -860,7 +862,7 @@ def manage_invite(request, invite_id):
         messages.success(request, f'{invite.requester} invited to {invite.collection}.')
     elif action == 'reject':
         invite.status = 'REJECTED'
-        messages.success(request, f'Invite to {invite.collection} has been rejected.')
+        messages.success(request, f'Invite by {invite.requester} to {invite.collection} has been rejected.')
 
     invite.save()
     return redirect('/lending/librarian/page/')
