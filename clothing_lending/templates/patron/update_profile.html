@@ -7,13 +7,42 @@
 	<title>Update Your Profile</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
     <style>
-        body {
+        html, body {
+            height: 100%;
             margin: 0;
             padding: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        body {
             font-family: 'Inter', sans-serif;
             background: #f8f9fa;
-            min-height: 100vh;
-            color: #111;
+        }
+
+        /*body {*/
+        /*    height: 100%;*/
+        /*    margin: 0;*/
+        /*    padding: 0;*/
+        /*    display: flex;*/
+        /*    flex-direction: column;*/
+        /*    font-family: 'Inter', sans-serif;*/
+        /*    background: #f8f9fa;*/
+        /*    color: #111;*/
+        /*}*/
+
+        main.main-content {
+            flex: 1;
+            /*display: flex;*/
+            /*flex-direction: column;*/
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 3rem auto;
+            padding: 0 2rem;
+            display: flex;
+            flex-direction: column;
         }
         
         header {
@@ -289,7 +318,8 @@
             </div>
         </div>
     </header>
-    <br>
+
+    <main class="main-content">
 	<div class="container mt-5">
         <div class="dashboard-grid">
         <div class="card">
@@ -329,8 +359,41 @@
             </div>
             </div>
         {% endif %}
-        <br>
     </div>
     </div>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <h5>Class project for UVA CS 3240 | This system is not monitored, and no real information should be submitted</h5>
+        </div>
+        <style>
+            footer {
+                margin-top: auto;
+                background: #111;
+                padding: 0.75rem 0;
+                width: 100%;
+                text-align: center;
+            }
+            .footer-content {
+                max-width: 100%;
+                padding: 0 2rem;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            .footer-content h5 {
+                font-family: 'Space Grotesk', sans-serif;
+                color: darkgrey;
+                margin: 0;
+                font-size: 0.75rem;
+                line-height: 0.5;
+                font-weight: 300;
+                text-align: center;
+                letter-spacing: 0.02em;
+            }
+        </style>
+    </footer>
 </body>
+
 </html>
