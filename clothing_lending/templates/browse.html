@@ -54,6 +54,7 @@
     </div>
     {% endif %}
 
+    <main class="main-content">
     <div class="browse-container">
         <div class="filters-sidebar">
             <div class="filter-header">
@@ -92,7 +93,7 @@
             </div>
         </div>
 
-        <div class="main-content">
+        <div class="items-area">
             <div class="grid-header">
                 <h2>Library</h2>
             </div>
@@ -185,18 +186,22 @@
             </div>
         </div>
     </div>
+    </main>
 
     <style>
-        body {
+        html, body {
             height: 100%;
             margin: 0;
             padding: 0;
             display: flex;
             flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        body {
             font-family: 'Inter', sans-serif;
             background: #f8f9fa;
             flex-grow: 1;
-            color: #111;
         }
 
         header {
@@ -205,6 +210,16 @@
             position: sticky;
             top: 0;
             z-index: 1000;
+        }
+
+        main.main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            min-width: 0;
+            padding-left: 1rem;
+            padding-right: 1rem;
         }
 
         .header-content {
@@ -224,6 +239,13 @@
             line-height: 1.1;
             font-weight: 700;
             letter-spacing: -0.02em;
+        }
+
+        .items-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
         }
 
         .user-info {
@@ -262,17 +284,21 @@
         }
 
         .browse-container {
-            display: grid;
-            grid-template-columns: 300px 1fr;
-            gap: 3rem;
-            max-width: 1400px;
-            margin: 3rem auto;
-            padding: 0 2rem;
+            flex: 1;
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            overflow-x: hidden;
+            gap: 1rem;
+            margin: 2rem auto;
         }
 
         .filters-sidebar {
+            width: 280px;
+            flex-shrink: 1;
             background: white;
-            padding: 2.5rem;
+            padding: 2rem;
+            box-sizing: border-box;
             height: fit-content;
             border-radius: 4px;
         }
@@ -369,7 +395,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 2rem;
+            padding-left: 2rem;
+            padding-right: 3rem;
         }
 
         .grid-header h2 {
@@ -383,6 +410,10 @@
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 2rem;
+            width: 100%;
+            padding: 2rem 2rem;
+            box-sizing: border-box;
+            min-height: 300px;
         }
 
         .item-card {
@@ -511,11 +542,28 @@
 
         @media (max-width: 768px) {
             .browse-container {
-                grid-template-columns: 1fr;
+                flex-direction: column;
+                padding-right: 2rem;
+                box-sizing: border-box;
             }
-            
-            .header-content {
-                padding: 0 1rem;
+
+            .filters-sidebar {
+                width: 100%;
+                padding: 1rem 2rem;
+                box-sizing: border-box;
+            }
+
+            .items-area {
+                width: 100%;
+            }
+
+            .items-grid {
+                padding: 2rem 0;
+            }
+
+            .grid-header {
+                padding-left: 2rem;
+                padding-right: 2rem;
             }
         }
         
@@ -772,40 +820,47 @@
             });
         });
     </script>
+
+    <footer>
+        <div class="footer-content">
+            <h5>Class project for UVA CS 3240 | This system is not monitored, and no real information should be submitted</h5>
+        </div>
+        <style>
+            footer {
+                /*margin-top: auto;*/
+                /*background: #111;*/
+                /*padding: 0.75rem 0;*/
+                /*left: 0;*/
+                /*bottom: 0;*/
+                /*width: 100%;*/
+                /*text-align: center;*/
+                background: #111;
+                color: darkgrey;
+                text-align: center;
+                padding: 0.75rem 0;
+                margin-top: auto;
+            }
+            .footer-content {
+                max-width: 100%;
+                padding: 0 2rem;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            .footer-content h5 {
+                font-family: 'Space Grotesk', sans-serif;
+                color: darkgrey;
+                margin: 0;
+                font-size: 0.75rem;
+                line-height: 0.5;
+                font-weight: 300;
+                text-align: center;
+                letter-spacing: 0.02em;
+            }
+        </style>
+    </footer>
+
 </body>
 
-<footer>
-    <div class="footer-content">
-        <h5>Class project for UVA CS 3240 | This system is not monitored, and no real information should be submitted</h5>
-    </div>
-    <style>
-        footer {
-            margin-top: auto;
-            background: #111;
-            padding: 0.75rem 0;
-            left: 0;
-            bottom: 0;
-            width: 100%;
-            text-align: center;
-        }
-        .footer-content {
-            max-width: 100%;
-            padding: 0 2rem;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .footer-content h5 {
-            font-family: 'Space Grotesk', sans-serif;
-            color: darkgrey;
-            margin: 0;
-            font-size: 0.75rem;
-            line-height: 0.5;
-            font-weight: 300;
-            text-align: center;
-            letter-spacing: 0.02em;
-        }
-    </style>
-</footer>
 
 </html>
