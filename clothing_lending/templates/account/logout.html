@@ -4,12 +4,18 @@
 <html lang="en">
 <meta charset="UTF-8">
 <title>Logged Out</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
 <style>
+    html, body {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
     body {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 100vh;
+        /*display: flex;*/
+        /*align-items: center;*/
+        /*justify-content: center;*/
+        /*height: 100vh;*/
         font-family: 'Inter', sans-serif;
         background-color: #f8f9fa;
     }
@@ -19,8 +25,9 @@
         padding: 2rem;
         border-radius: 8px;
         box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        font-family: 'Space Grotesk', sans-serif;
     }
-    button.logout-btn {
+    button.btn, a.btn {
         display: block;
         margin-left: auto;
         margin-right: auto;
@@ -30,22 +37,71 @@
         border-radius: 5px;
         text-decoration: none;
         font-size: 1rem;
-        width: 250px;
+        width: 270px;
         align-items: center;
         vertical-align: middle;
         background: black;
         color: white;
         transition: 0.3s;
+        text-align: center;
+        box-sizing: border-box;
+        font-family: 'Space Grotesk', sans-serif;
     }
-    button.logout-btn:hover {
+    button.btn:hover, a.btn:hover {
         background: grey;
         cursor: pointer;
     }
+    header {
+        margin: 0;
+        background: #111;
+        padding: 2rem 0;
+        position: sticky;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+    }
+    .header-content {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .header-content h1 {
+        font-family: 'Space Grotesk', sans-serif;
+        color: white;
+        margin: 0;
+        font-size: 1.75rem;
+        line-height: 1.1;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+    }
+    .body-content {
+        /*background: white;*/
+        display: flex;
+        flex-wrap: wrap;
+        /*align-items: center;*/
+        justify-content: center;
+        gap: 40px;
+        max-width: 800px;
+        margin: 3rem auto;
+        padding: 2rem;
+        border-radius: 8px;
+        box-sizing: border-box;
+        font-family: 'Inter', sans-serif;
+    }
 </style>
-
+<header>
+    <div class="header-content">
+        <h1>AIRDROBE</h1>
+    </div>
+</header>
+<div class="body-content">
     <div class="logout-container">
-        <h1>Are you sure you want to sign out?</h1>
-        <p>Thanks for visiting Clothing Lending!</p>
+        <h1>Sign Out</h1>
+        <p>Are you sure you want to sign out? You will be redirected back to the login page.</p>
         {% url 'account_logout' as action_url %}
         {% element form method="post" action=action_url no_visible_fields=True %}
             {% slot body %}
@@ -53,33 +109,10 @@
                 {{ redirect_field }}
             {% endslot %}
             {% slot actions %}
-                <button type="submit" class="logout-btn">Sign Out</button>
+                <button type="submit" class="btn">Sign Out</button>
+                <a href="{% url 'browse' %}" class="btn">Back to Browse</a>
             {% endslot %}
         {% endelement %}
     </div>
+</div>
 </html>
-
-<!--{% load allauth i18n %}-->
-<!--{% block head_title %}-->
-<!--{% trans "Sign Out" %}-->
-<!--{% endblock head_title %}-->
-<!--{% block content %}-->
-<!--{% element h1 %}-->
-<!--{% trans "Sign Out" %}-->
-<!--{% endelement %}-->
-<!--{% element p %}-->
-<!--{% trans 'Are you sure you want to sign out?' %}-->
-<!--{% endelement %}-->
-<!--{% url 'account_logout' as action_url %}-->
-<!--{% element form method="post" action=action_url no_visible_fields=True %}-->
-<!--{% slot body %}-->
-<!--{% csrf_token %}-->
-<!--{{ redirect_field }}-->
-<!--{% endslot %}-->
-<!--{% slot actions %}-->
-<!--{% element button type="submit" %}-->
-<!--{% trans 'Sign Out' %}-->
-<!--{% endelement %}-->
-<!--{% endslot %}-->
-<!--{% endelement %}-->
-<!--{% endblock content %}-->
