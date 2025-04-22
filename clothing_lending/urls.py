@@ -1,6 +1,9 @@
 from django.urls import path, include
 from django.views.generic import TemplateView
 from django.contrib.auth.views import LogoutView
+from django.shortcuts import redirect
+
+
 
 # Import all views directly 
 from .views import (
@@ -27,7 +30,7 @@ from .views import (
 
     # Invite management
     manage_invite,
-    
+
     # Debug & S3 helpers
     test_s3_connection, get_presigned_url, test_s3_upload, test_s3_permissions,
     
@@ -37,7 +40,7 @@ from .views import (
 
 urlpatterns = [
     # Basic routes
-    path('', TemplateView.as_view(template_name="index.html")),
+    path('', TemplateView.as_view(template_name="index.html"), name='home'),
     path("catalog/", catalog, name="catalog"),
     path("checkout/", checkout, name="checkout"),
     path('browse/', browse, name='browse'),

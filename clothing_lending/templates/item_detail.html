@@ -8,11 +8,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
     <style>
         body {
+            height: 100%;
             margin: 0;
             padding: 0;
+            display: flex;
+            flex-direction: column;
             font-family: 'Inter', sans-serif;
             background: #f8f9fa;
-            min-height: 100vh;
+            flex-grow: 1;
             color: #111;
         }
 
@@ -396,8 +399,8 @@
                     {% if user.is_authenticated and user.user_type == 1 %}
                     <a href="{% url 'librarian_page' %}" class="btn btn-secondary">Back to Dashboard</a>
                     <div>
-                        <a href="#" class="btn btn-warning">Edit Item</a>
-                        <form method="POST" action="/lending/items/{{ item.id }}/delete/" style="display: inline-block; margin-left: 0.5rem;">
+                        <a href="#" class="btn btn-warning" style="display: inline-block; margin-left: 2rem;">Edit Item</a>
+                        <form method="POST" action="/lending/items/{{ item.id }}/delete/" style="display: inline-block; margin-left: 0.3rem;">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-danger">Delete Item</button>
                         </form>
@@ -481,4 +484,39 @@
     </script>
     {% endif %}
 </body>
+
+<footer>
+    <div class="footer-content">
+        <h5>Class project for UVA CS 3240 | This system is not monitored, and no real information should be submitted</h5>
+    </div>
+    <style>
+        footer {
+            margin-top: auto;
+            background: #111;
+            padding: 0.75rem 0;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+        }
+        .footer-content {
+            max-width: 100%;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .footer-content h5 {
+            font-family: 'Space Grotesk', sans-serif;
+            color: darkgrey;
+            margin: 0;
+            font-size: 0.75rem;
+            line-height: 0.5;
+            font-weight: 300;
+            text-align: center;
+            letter-spacing: 0.02em;
+        }
+    </style>
+</footer>
+
 </html>

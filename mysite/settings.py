@@ -38,6 +38,7 @@ SOCIALACCOUNT_AUTO_SIGNUP = True  # Automatically create users when they sign up
 SOCIALACCOUNT_EMAIL_REQUIRED = True  # Ensure the email is captured
 SOCIALACCOUNT_EMAIL_VERIFICATION = 'none'  # Disable email verification for social accounts
 SOCIALACCOUNT_ADAPTER = 'mysite.adapters.CustomSocialAccountAdapter'
+SOCIALACCOUNT_LOGIN_ON_GET = True
 
 
 INSTALLED_APPS = [

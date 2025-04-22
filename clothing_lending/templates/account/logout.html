@@ -1,0 +1,157 @@
+{% load i18n %}
+{% load allauth %}
+<!DOCTYPE html>
+<html lang="en">
+<meta charset="UTF-8">
+<title>Logged Out</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<style>
+    html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        /*box-sizing: border-box;*/
+        display: flex;
+        flex-direction: column;
+    }
+    body {
+        /*display: flex;*/
+        /*align-items: center;*/
+        /*justify-content: center;*/
+        /*height: 100vh;*/
+        font-family: 'Inter', sans-serif;
+        background-color: #f8f9fa;
+        flex-grow: 1;
+    }
+    .logout-container {
+        text-align: center;
+        background: white;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        font-family: 'Space Grotesk', sans-serif;
+    }
+    button.btn, a.btn {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: 10px;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 5px;
+        text-decoration: none;
+        font-size: 1rem;
+        width: 270px;
+        align-items: center;
+        vertical-align: middle;
+        background: black;
+        color: white;
+        transition: 0.3s;
+        text-align: center;
+        box-sizing: border-box;
+        font-family: 'Space Grotesk', sans-serif;
+    }
+    button.btn:hover, a.btn:hover {
+        background: grey;
+        cursor: pointer;
+    }
+    header {
+        margin: 0;
+        background: #111;
+        padding: 2rem 0;
+        position: sticky;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+    }
+    .header-content {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .header-content h1 {
+        font-family: 'Space Grotesk', sans-serif;
+        color: white;
+        margin: 0;
+        font-size: 1.75rem;
+        line-height: 1.1;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+    }
+    .body-content {
+        /*background: white;*/
+        display: flex;
+        flex-wrap: wrap;
+        /*align-items: center;*/
+        justify-content: center;
+        gap: 40px;
+        max-width: 800px;
+        margin: 3rem auto;
+        padding: 2rem;
+        border-radius: 8px;
+        box-sizing: border-box;
+        font-family: 'Inter', sans-serif;
+    }
+</style>
+<header>
+    <div class="header-content">
+        <h1>AIRDROBE</h1>
+    </div>
+</header>
+<div class="body-content">
+    <div class="logout-container">
+        <h1>Sign Out</h1>
+        <p>Are you sure you want to sign out? You will be redirected back to the login page.</p>
+        {% url 'account_logout' as action_url %}
+        {% element form method="post" action=action_url no_visible_fields=True %}
+            {% slot body %}
+                {% csrf_token %}
+                {{ redirect_field }}
+            {% endslot %}
+            {% slot actions %}
+                <button type="submit" class="btn">Sign Out</button>
+                <a href="{% url 'browse' %}" class="btn">Back to Browse</a>
+            {% endslot %}
+        {% endelement %}
+    </div>
+</div>
+
+<footer>
+    <div class="footer-content">
+        <h5>Class project for UVA CS 3240 | This system is not monitored, and no real information should be submitted</h5>
+    </div>
+    <style>
+        footer {
+            margin-top: auto;
+            background: #111;
+            padding: 0.75rem 0;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+        }
+        .footer-content {
+            max-width: 100%;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .footer-content h5 {
+            font-family: 'Space Grotesk', sans-serif;
+            color: darkgrey;
+            margin: 0;
+            font-size: 0.75rem;
+            line-height: 0.5;
+            font-weight: 300;
+            text-align: center;
+            letter-spacing: 0.02em;
+        }
+    </style>
+</footer>
+
+</html>
