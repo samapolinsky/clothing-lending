@@ -93,6 +93,17 @@
         .btn-danger:hover {
             background: #c82333;
         }
+
+        .alert {
+            padding: 1.5rem;
+            border-radius: 4px;
+            margin-bottom: 2rem;
+        }
+        
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
         
         .card {
             background: white;
@@ -300,13 +311,14 @@
     </header>
 
     <div class="main-container">
+        {% if canview %}
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{% url 'browse' %}">Browse</a></li>
                 <li class="breadcrumb-item active" aria-current="page">{{ collection.name }}</li>
             </ol>
         </nav>
-        
+
         <div class="card">
             <h2 class="collection-title">{{ collection.name }}</h2>
             <p class="collection-description">{{ collection.description }}</p>
@@ -363,6 +375,17 @@
             </div>
             {% endfor %}
         </div>
+        {% else %}
+        <div class="alert alert-info" style="text-align: center;">
+            <p>You need to be invited to this collection to view.</p>
+            {% if user.is_authenticated and user.user_type == 2 %}
+            <form method="POST" action="/lending/collections/{{ collection.id }}/request-invite/">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary">Request Access</button>
+            </form>
+            {% endif %}
+        </div>
+        {% endif %}
     </div>
 
     <style>

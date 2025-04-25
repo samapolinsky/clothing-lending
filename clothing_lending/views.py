@@ -209,9 +209,9 @@ def add_collection(request):
 def user_can_view_collection(user, collection):
     if not collection.is_private:
         return True
-    if user.groups.filter(name='Librarians').exists():
+    if user.user_type == 1:
         return True
-    return collection.allowed_patrons.filter(id=user.id).exists()
+    return user.patron in collection.allowed_patrons.all() # thanks to https://stackoverflow.com/questions/20931571/check-if-item-is-in-manytomany-field
 
 
 @user_passes_test(is_librarian)
@@ -569,11 +569,18 @@ def delete_item(request, item_id):
     messages.success(request, 'Item deleted successfully.')
     return redirect('librarian_page')
 
-
 def collection_detail(request, collection_id):
     collection = get_object_or_404(Collection, pk=collection_id)
     items = collection.items.all()
-    return render(request, 'collection_detail.html', {'collection': collection, 'items': items})
+    if request.user.is_authenticated:
+        can_view = user_can_view_collection(request.user, collection)
+    else:
+        if collection.is_private:
+            can_view = False
+        else:
+            can_view = True
+    #print(can_view)
+    return render(request, 'collection_detail.html', {'collection': collection, 'items': items, 'canview': can_view})
 
 
 @user_passes_test(is_librarian)
