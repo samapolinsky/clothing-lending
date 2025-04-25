@@ -141,41 +141,34 @@
                         </div>
                     </div>
                     {% else %}
-                        {% if user.user_type == 1 %}
                         <div class="card collection-card" data-collection-id="{{ collection.id }}" data-type="collection">
                             <div class="collection-details">
-                                <h3><a href="{% url 'collection_detail' collection.id %}">{{ collection.name }}</a></h3>
+                                <h3><a href="{% url 'collection_detail' collection.id %}">{{ collection.name }} - Private</a></h3>
                                 <p class="card-text">{{ collection.description }}</p>
                                 <span class="collection-meta">Created by: {{ collection.created_by.email}}</span>
                             </div>
                         </div>
-                        {% elif user.user_type == 2 and user.patron in collection.allowed_patrons %}
-                        <div class="card collection-card" data-collection-id="{{ collection.id }}" data-type="collection">
+                    {% endif %}
+                    {% endfor %}
+                    {% if restrictedcollections %}
+                        {% for rescollection in restrictedcollections %}
+                        <div class="card collection-card private-collection-card" data-collection-id="{{ rescollection.id }}" data-type="collection">
                             <div class="collection-details">
-                                <h3><a href="{% url 'collection_detail' collection.id %}">{{ collection.name }}</a></h3>
-                                <p class="card-text">{{ collection.description }}</p>
-                                <span class="collection-meta">Created by: {{ collection.created_by.email}}</span>
-                            </div>
-                        </div>
-                        {% else %}
-                        <div class="card collection-card" data-collection-id="{{ collection.id }}" data-type="collection">
-                            <div class="collection-details">
-                                <h3>{{ collection.name }}</h3>
-                                <p class="card-text">{{ collection.description }}</p>
-                                <span class="collection-meta">Created by: {{ collection.created_by.email}}</span>
+                                <h3>{{ rescollection.name }} - Private</h3>
+                                <p class="card-text">{{ rescollection.description }}</p>
+                                <span class="collection-meta">Created by: {{ rescollection.created_by.email}}</span>
                                 <br>
                                 <br>
                                 {% if user.is_authenticated and user.user_type == 2 %}
-                                <form method="POST" action="/lending/collections/{{ collection.id }}/request-invite/">
+                                <form method="POST" action="/lending/collections/{{ rescollection.id }}/request-invite/">
                                     {% csrf_token %}
                                     <button type="submit" class="btn btn-primary">Request Access</button>
                                 </form>
                                 {% endif %}
                             </div>
                         </div>
-                        {% endif %}
+                        {% endfor %}
                     {% endif %}
-                    {% endfor %}
                 {% endif %}
                 
                 {% if not items and not collections %}
@@ -426,6 +419,14 @@
 
         .collection-card {
             background: white;
+            transition: all 0.3s ease;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .private-collection-card {
+            background: lightgray;
             transition: all 0.3s ease;
             border-radius: 4px;
             overflow: hidden;

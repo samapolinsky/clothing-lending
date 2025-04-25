@@ -151,22 +151,27 @@ def browse(request):
     # items = Item.objects.filter(available=True)
 
     # Get all collections
+    # Ok, looks like I need to make separate "allowed" and "restricted" collections
     if request.user.is_authenticated and request.user.user_type == 1:
         collections = Collection.objects.all()
+        restricted_collections = Collection.objects.none() # nothing restricted
         # items = Item.objects.filter(available=True)
         items = Item.objects.all()
     if request.user.is_authenticated and request.user.user_type == 2:
         try:
             patron = request.user.patron
-            #collections = Collection.objects.filter(Q(is_private=False) | Q(allowed_patrons=patron))
+            collections = Collection.objects.filter(Q(is_private=False) | Q(allowed_patrons=patron))
             # Ok, so patrons are supposed to see ALL collections' titles, but they cannot see private content unless given access
-            collections = Collection.objects.all()
+            restricted_collections = Collection.objects.exclude(Q(is_private=False) | Q(allowed_patrons=patron))
+            #print(restricted_collections)
             items = Item.objects.filter(Q(available=True) and (Q(private_collection=False) | Q(collections__allowed_patrons=patron))).distinct()
         except Patron.DoesNotExist:
             collections = Collection.objects.filter(is_private=False)
+            restricted_collections = Collection.objects.none() # do not show restricted
 
     if not request.user.is_authenticated:
         collections = Collection.objects.filter(is_private=False)
+        restricted_collections = Collection.objects.none() # do not show restricted
         items = Item.objects.filter(Q(available=True) and Q(private_collection=False)).distinct()
 
     # Get a list of all categories for filtering
@@ -175,6 +180,7 @@ def browse(request):
     context = {
         'items': items,
         'collections': collections,
+        'restrictedcollections': restricted_collections,
         'categories': categories
     }
 
