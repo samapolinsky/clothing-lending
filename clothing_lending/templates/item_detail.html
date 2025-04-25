@@ -104,6 +104,17 @@
             background: #e0a800;
         }
 
+        .alert {
+            padding: 1.5rem;
+            border-radius: 4px;
+            margin-bottom: 2rem;
+        }
+        
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
         .card {
             background: white;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
@@ -328,6 +339,7 @@
     </header>
 
     <div class="main-container">
+    {% if canview %}
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{% url 'browse' %}">Browse</a></li>
@@ -449,6 +461,11 @@
 
             </div>
         </div>
+        {% else %}
+        <div class="alert alert-info" style="text-align: center;">
+            <p>You do not have permission to view this item.</p>
+        </div>
+        {% endif %}
     </div>
 
     <style>

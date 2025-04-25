@@ -213,6 +213,14 @@ def user_can_view_collection(user, collection):
         return True
     return user.patron in collection.allowed_patrons.all() # thanks to https://stackoverflow.com/questions/20931571/check-if-item-is-in-manytomany-field
 
+# janky code to see if a user can view an item
+def user_can_view_item(user, item):
+    cv = True
+    collections = item.collections.all()
+    for collection in collections:
+        if not user_can_view_collection(user, collection):
+            cv = False
+    return cv
 
 @user_passes_test(is_librarian)
 def add_item(request):
@@ -276,6 +284,14 @@ def add_item(request):
 
 def item_detail(request, item_id):
     item = get_object_or_404(Item, pk=item_id)
+    if request.user.is_authenticated:
+        can_view = user_can_view_item(request.user, item)
+    else:
+        can_view = True
+        collections = item.collections.all()
+        for collection in collections:
+            if collection.is_private:
+                can_view = False
     if request.method == 'POST' and 'add_to_collection' in request.POST:
         # form = AddItemToCollectionForm(request.POST, user=request.user if request.user.is_authenticated else None)
         form = AddItemToCollectionForm(request.POST, user=request.user if request.user.is_authenticated else None, item=item)
@@ -294,7 +310,7 @@ def item_detail(request, item_id):
             item=item
         )
 
-    return render(request, 'item_detail.html', {'item': item, 'form': form})
+    return render(request, 'item_detail.html', {'item': item, 'form': form, 'canview': can_view})
 
 
 def test_s3_connection(request):
