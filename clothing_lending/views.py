@@ -142,13 +142,24 @@ def google_oauth_callback(request):
 
     return redirect('index.html')
 
+def browse_items(request):
+    query = request.GET.get('q')
+    if query:
+        items = Item.objects.filter(name__icontains=query)
+    else:
+        items = Item.objects.all()
+
+    context = {
+        'items': items,
+    }
+    return render(request, 'browse.html', context)
 
 def browse(request):
     """
     View to browse all available items
     """
     # Get all available items
-    # items = Item.objects.filter(available=True)
+    query = request.GET.get('q')
 
     # Get all collections
     # Ok, looks like I need to make separate "allowed" and "restricted" collections
@@ -156,7 +167,11 @@ def browse(request):
         collections = Collection.objects.all()
         restricted_collections = Collection.objects.none() # nothing restricted
         # items = Item.objects.filter(available=True)
-        items = Item.objects.all()
+        # items = Item.objects.all()
+        if query:
+            items = Item.objects.filter(Q(name__icontains=query) | Q(categories__name__icontains=query))
+        else:
+            items = Item.objects.all()
     if request.user.is_authenticated and request.user.user_type == 2:
         try:
             patron = request.user.patron
@@ -164,15 +179,36 @@ def browse(request):
             # Ok, so patrons are supposed to see ALL collections' titles, but they cannot see private content unless given access
             restricted_collections = Collection.objects.exclude(Q(is_private=False) | Q(allowed_patrons=patron))
             #print(restricted_collections)
-            items = Item.objects.filter(Q(available=True) and (Q(private_collection=False) | Q(collections__allowed_patrons=patron))).distinct()
+            # items = Item.objects.filter(Q(available=True) and (Q(private_collection=False) | Q(collections__allowed_patrons=patron))).distinct()
+            if query:
+                items = Item.objects.filter(
+                    Q(available=True) &
+                    (Q(private_collection=False) | Q(collections__allowed_patrons=patron)) &
+                    (Q(name__icontains=query) | Q(categories__name__icontains=query))
+                ).distinct()
+            else:
+                items = Item.objects.filter(
+                    Q(available=True) &
+                    (Q(private_collection=False) | Q(collections__allowed_patrons=patron))
+                ).distinct()
         except Patron.DoesNotExist:
             collections = Collection.objects.filter(is_private=False)
             restricted_collections = Collection.objects.none() # do not show restricted
+            if query:
+                items = Item.objects.filter(Q(available=True) & Q(private_collection=False) & Q(name__icontains=query)).distinct()
+            else:
+                items = Item.objects.filter(Q(available=True) & Q(private_collection=False)).distinct()
+
 
     if not request.user.is_authenticated:
         collections = Collection.objects.filter(is_private=False)
         restricted_collections = Collection.objects.none() # do not show restricted
-        items = Item.objects.filter(Q(available=True) and Q(private_collection=False)).distinct()
+        # items = Item.objects.filter(Q(available=True) and Q(private_collection=False)).distinct()
+        if query:
+            items = Item.objects.filter(Q(available=True) & Q(private_collection=False) & Q(name__icontains=query)).distinct() | Q(categories__name__icontains=query)
+        else:
+            items = Item.objects.filter(Q(available=True) & Q(private_collection=False)).distinct()
+
 
     # Get a list of all categories for filtering
     # categories = Item.objects.values_list('category', flat=True).distinct()

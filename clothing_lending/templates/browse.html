@@ -62,6 +62,11 @@
             </div>
             
             <div class="filter-section">
+                <h4>Search</h4>
+                <form method="GET" action="" class="search-form">
+                    <input type="text" name="q" placeholder="Search items..." value="{{ request.GET.q }}" class="form-control search-input">
+                    <button type="submit" class="search-button">Search</button>
+                </form>
                 <div class="filter-section">
                     <h4>Type</h4>
                     <div class="filter-options">
@@ -243,6 +248,40 @@
             display: flex;
             flex-direction: column;
             min-width: 0;
+        }
+
+        .search-form {
+            display: flex;
+            /*flex-direction: column;*/
+            gap: 0.5rem;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .search-input {
+            max-width: 300px;
+            width: 100%;
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 4px 0 0 4px;
+            font-size: 1rem;
+        }
+
+        .search-button {
+            padding: 0.75rem 1.5rem;
+            border: 1px solid #ddd;
+            background-color: #111;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 4px;
+            max-width: 300px;
+            width: fit-content;
+        }
+
+        .search-button:hover {
+            background-color: #333;
         }
 
         .user-info {
