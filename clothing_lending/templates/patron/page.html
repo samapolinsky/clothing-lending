@@ -363,7 +363,10 @@
                                             <td>
                                                 <a href="{% url 'item_detail' request.item.id %}" class="title-link">{{ request.item.name }}</a>
                                             </td>
-                                            <td>{{ request.item.category }}</td>
+                                            <td>{% for category in request.item.categories.all %}
+                                                    {{ category.name }}{% if not forloop.last %}, {% endif %}
+                                                {% endfor %}
+                                            </td>
                                             <td>{{ request.request_date|date:"M d, Y" }}</td>
                                             <td><span class="badge badge-primary">Pending</span></td>
                                         </tr>

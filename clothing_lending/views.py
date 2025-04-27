@@ -8,7 +8,7 @@ import uuid
 from django.db.models import Q
 from django.utils import timezone
 
-from clothing_lending.models import User, Patron, Librarian, Collection, Item, Lending, Invite
+from clothing_lending.models import User, Patron, Librarian, Collection, Item, Lending, Invite, Category
 from clothing_lending.forms import CollectionForm, ItemForm, PromoteUserForm, AddItemToCollectionForm, PatronProfileForm
 from clothing_lending.s3_utils import upload_file_to_s3, get_s3_client, generate_presigned_url, delete_file_from_s3
 
@@ -175,7 +175,8 @@ def browse(request):
         items = Item.objects.filter(Q(available=True) and Q(private_collection=False)).distinct()
 
     # Get a list of all categories for filtering
-    categories = Item.objects.values_list('category', flat=True).distinct()
+    # categories = Item.objects.values_list('category', flat=True).distinct()
+    categories = Category.objects.all()
 
     context = {
         'items': items,
@@ -264,6 +265,14 @@ def add_item(request):
             # Save the item
             try:
                 item.save()
+                form.save_m2m()
+
+                new_category_name = form.cleaned_data.get('new_category')
+                if new_category_name:
+                    new_cat, created = Category.objects.get_or_create(name=new_category_name)
+                    item.categories.add(new_cat)  # Link it to this item
+                    print(f"Added new category: {new_cat.name}")
+
                 print(f"Item saved with ID: {item.id}")
                 print(f"Item image_url: {item.image_url}")
                 print(f"Item s3_image_key: {item.s3_image_key}")
@@ -287,7 +296,7 @@ def add_item(request):
 def edit_item(request, item_id):
     item = get_object_or_404(Item, pk=item_id)
     if request.method == 'POST':
-        form = ItemForm(request.POST, request.FILES, instance=item)
+        form = ItemForm(request.POST or None, request.FILES or None, instance=item)
         print(f"Form submitted. Files in request: {request.FILES}")
         if form.is_valid():
             print("Form is valid")
@@ -331,6 +340,15 @@ def edit_item(request, item_id):
             # Save the item
             try:
                 item.save()
+                form.save_m2m()
+
+
+                new_category_name = form.cleaned_data.get('new_category')
+                if new_category_name:
+                    new_cat, created = Category.objects.get_or_create(name=new_category_name)
+                    item.categories.add(new_cat)  # Link new category
+                    print(f"Added new category: {new_cat.name}")
+
                 print(f"Item saved with ID: {item.id}")
                 #print(f"Item image_url: {item.image_url}")
                 #print(f"Item s3_image_key: {item.s3_image_key}")

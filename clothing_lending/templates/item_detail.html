@@ -379,7 +379,12 @@
 
                 <ul class="detail-list">
                     <li>
-                        <strong>Category:</strong> {{ item.category }}
+                        <strong>Categories:</strong>
+                        {% for category in item.categories.all %}
+                            {{ category.name }}{% if not forloop.last %}, {% endif %}
+                        {% empty %}
+                            Uncategorized
+                        {% endfor %}
                     </li>
                     <li>
                         <strong>Size:</strong> {{ item.get_size_display }}

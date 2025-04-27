@@ -73,7 +73,7 @@
                     <h4>Categories</h4>
                     <div class="filter-options">
                         {% for category in categories %}
-                        <button class="filter-chip" data-category="{{ category }}">{{ category }}</button>
+                        <button class="filter-chip" data-category="{{ category.name }}">{{ category.name }}</button>
                         {% endfor %}
                     </div>
                     
@@ -119,7 +119,11 @@
                         <div class="item-details">
                             <div class="item-meta">
                                 <h3>{{ item.name }}</h3>
-                                <span class="item-category">{{ item.category }}</span>
+                                <span class="item-category">
+                                    {% for category in item.categories.all %}
+                                        {{ category.name }}{% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                </span>
                                 <span class="item-size">{{ item.get_size_display }}</span>
                                 <span class="item-status {% if item.available %}available{% else %}unavailable{% endif %}">
                                     {{ item.available|yesno:"Available,Unavailable" }}
@@ -688,7 +692,9 @@
             
             // Filter items
             itemCards.forEach(card => {
-                const category = card.querySelector('.item-category').textContent.toLowerCase();
+                // const category = card.querySelector('.item-category').textContent.toLowerCase();
+                const categoryText = card.querySelector('.item-category').textContent.toLowerCase();
+                const categories = categoryText.split(',').map(c => c.trim());
                 const sizeText = card.querySelector('.item-size').textContent.replace('Size: ', '').trim();
                 
                 // Convert size display names to size codes for matching
@@ -707,8 +713,11 @@
                 const matchesType = selectedTypes.length === 0 || selectedTypes.includes('items');
                 
                 // Check if item matches category filter (if any categories are selected)
-                const matchesCategory = selectedCategories.length === 0 || selectedCategories.some(c => category.includes(c));
-                
+                // const matchesCategory = selectedCategories.length === 0 || selectedCategories.some(c => category.includes(c));
+                const matchesCategory = selectedCategories.length === 0 || selectedCategories.some(selected =>
+                    categories.includes(selected)
+                );
+
                 // Check if item matches size filter (if any sizes are selected)
                 const matchesSize = selectedSizes.length === 0 || selectedSizes.includes(size);
                 

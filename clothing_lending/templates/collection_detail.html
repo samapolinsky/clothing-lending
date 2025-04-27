@@ -361,7 +361,9 @@
                 <div class="item-details">
                     <div class="item-meta">
                         <h3>{{ item.name }}</h3>
-                        <span class="item-category">{{ item.category }}</span>
+                        <span class="item-category">{% for category in item.categories.all %}
+                                                        {{ category.name }}{% if not forloop.last %}, {% endif %}
+                                                    {% endfor %}</span>
                         <span class="item-size">{{ item.get_size_display }}</span>
                         <span class="item-status {% if item.available %}available{% else %}unavailable{% endif %}">
                             {{ item.available|yesno:"Available,Unavailable" }}
