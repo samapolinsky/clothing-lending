@@ -8,7 +8,7 @@ import uuid
 from django.db.models import Q
 from django.utils import timezone
 
-from clothing_lending.models import User, Patron, Librarian, Collection, Item, Lending, Invite
+from clothing_lending.models import User, Patron, Librarian, Collection, Item, Lending, Invite, Rating
 from clothing_lending.forms import CollectionForm, ItemForm, PromoteUserForm, AddItemToCollectionForm, PatronProfileForm
 from clothing_lending.s3_utils import upload_file_to_s3, get_s3_client, generate_presigned_url, delete_file_from_s3
 
@@ -351,6 +351,15 @@ def edit_item(request, item_id):
 
 def item_detail(request, item_id):
     item = get_object_or_404(Item, pk=item_id)
+    # Get ratings
+    ratings = Rating.objects.filter(item=item).order_by('-rate_date')
+    avg = 0
+    if ratings: # get average rating
+        sum = 0
+        for rating in ratings:
+            sum = sum + rating.num_rating
+        avg = round(sum / ratings.count(), 1)
+        
     if request.user.is_authenticated:
         can_view = user_can_view_item(request.user, item)
     else:
@@ -377,7 +386,7 @@ def item_detail(request, item_id):
             item=item
         )
 
-    return render(request, 'item_detail.html', {'item': item, 'form': form, 'canview': can_view})
+    return render(request, 'item_detail.html', {'item': item, 'form': form, 'ratings': ratings, 'avg': avg, 'canview': can_view})
 
 
 def test_s3_connection(request):

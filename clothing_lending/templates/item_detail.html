@@ -376,7 +376,12 @@
             <div class="item-details">
                 <h2 class="item-title">{{ item.name }}</h2>
                 <p class="item-description">{{ item.description }}</p>
-
+                {% if ratings %}
+                    <p>{{ avg }} out of 5</p>
+                {% else %}
+                    <p>No Rating</p>
+                {% endif %}
+                
                 <ul class="detail-list">
                     <li>
                         <strong>Category:</strong> {{ item.category }}
@@ -457,6 +462,21 @@
                         <button type="submit" name="add_to_collection" class="btn btn-primary">Add to Collection</button>
                     </form>
                 </div>
+                {% endif %}
+                <br>
+                <h3>Reviews</h3>
+                {% if ratings %}
+                <ul class="detail-list">
+                    {% for rating in ratings %}
+                    <!-- I am going to add stuff to show username/profile pic and timestamp laterrrrr -->
+                        <li><strong>{{ rating.num_rating }} out of 5:</strong> {{ rating.comment }}</li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                    <p>No Reviews</p>
+                {% endif %}
+                {% if user.is_authenticated and user.user_type == 2 %}
+                <a href="#" class="btn btn-primary">Review Item</a>
                 {% endif %}
 
             </div>

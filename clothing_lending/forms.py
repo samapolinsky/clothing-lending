@@ -1,4 +1,5 @@
 from django import forms
+from django.db.models import Q
 from .models import Collection, Item, Patron
 
 class CollectionForm(forms.ModelForm):
@@ -58,7 +59,7 @@ class AddItemToCollectionForm(forms.Form):
             if self.user.user_type == 1:  # Librarian
                 self.fields['collections'].queryset = Collection.objects.all()
             elif self.user.user_type == 2:  # Patron
-                self.fields['collections'].queryset = Collection.objects.filter(created_by=self.user)
+                self.fields['collections'].queryset = Collection.objects.filter(Q(created_by=self.user) | Q(allowed_patrons=self.user.patron)) #Q(is_private=False) | Q(allowed_patrons=patron)
         else:
             self.fields['collections'].queryset = Collection.objects.filter(is_private=False)
 
@@ -109,3 +110,5 @@ class PatronProfileForm(forms.ModelForm):
             if image.size > 10 * 1024 * 1024:  # 10MB limit
                 raise forms.ValidationError("Image file too large (> 10MB)")
             return image
+
+# And now i need to add a form to rate items arrghhhhh

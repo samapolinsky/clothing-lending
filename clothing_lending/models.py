@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 import uuid
 from django.utils import timezone
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 
 # Create your models here.
@@ -120,3 +121,12 @@ class Invite(models.Model):
 
     def __str__(self):
         return f"{self.requester} - {self.collection.name} ({self.get_status_display()})"
+    
+
+# Making a class for ratings/comments
+class Rating(models.Model):
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    rater = models.ForeignKey(Patron, on_delete=models.CASCADE)
+    rate_date = models.DateTimeField(default=timezone.now)
+    num_rating = models.IntegerField(default=1, validators=[MinValueValidator(1), MaxValueValidator(5)]) #https://stackoverflow.com/questions/42425933/how-do-i-set-a-default-max-and-min-value-for-an-integerfield-django
+    comment = models.TextField(max_length=200)
