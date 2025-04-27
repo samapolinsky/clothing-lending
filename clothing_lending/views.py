@@ -282,6 +282,73 @@ def add_item(request):
     return render(request, 'librarian/add_item.html', {'form': form})
 
 
+# janky code to edit an item
+@user_passes_test(is_librarian)
+def edit_item(request, item_id):
+    item = get_object_or_404(Item, pk=item_id)
+    if request.method == 'POST':
+        form = ItemForm(request.POST, request.FILES, instance=item)
+        print(f"Form submitted. Files in request: {request.FILES}")
+        if form.is_valid():
+            print("Form is valid")
+            item = form.save(commit=False) # update item!
+            librarian = Librarian.objects.get(user=request.user)
+            item.created_by = librarian
+
+            # Replace image upload to S3
+            if 'image' in request.FILES:
+                print(f"Image found in request.FILES: {request.FILES['image']}")
+                file_obj = request.FILES['image']
+
+                # Print file details
+                print(f"File name: {file_obj.name}")
+                print(f"File size: {file_obj.size}")
+                print(f"File content type: {file_obj.content_type}")
+
+                # Try to upload to S3
+                try:
+                    s3_upload = upload_file_to_s3(file_obj)
+                    if s3_upload:
+                        print(f"S3 upload successful: {s3_upload}")
+                        # Delete old item picture from S3 if it exists
+                        if item.s3_image_key:
+                            from clothing_lending.s3_utils import delete_file_from_s3
+                            delete_file_from_s3(item.s3_image_key)
+                        # update item
+                        item.image_url = s3_upload['url']
+                        item.s3_image_key = s3_upload['key']
+                    else:
+                        print("S3 upload failed - returned None")
+                        messages.error(request, "Failed to upload image to S3. Item saved without image.")
+                except Exception as e:
+                    print(f"Exception during S3 upload: {e}")
+                    import traceback
+                    traceback.print_exc()
+                    messages.error(request, f"Error uploading image: {str(e)}")
+            else:
+                print("No image in request.FILES")
+
+            # Save the item
+            try:
+                item.save()
+                print(f"Item saved with ID: {item.id}")
+                #print(f"Item image_url: {item.image_url}")
+                #print(f"Item s3_image_key: {item.s3_image_key}")
+                messages.success(request, 'Item edited successfully!')
+                return redirect('librarian_page')
+            except Exception as e:
+                print(f"Error editing item: {e}")
+                import traceback
+                traceback.print_exc()
+                messages.error(request, f"Error editing item: {str(e)}")
+        else:
+            print(f"Form errors: {form.errors}")
+    else:
+        form = ItemForm(instance=item) # thanks to https://stackoverflow.com/questions/31406276/how-to-load-an-instance-in-django-modelforms
+
+    return render(request, 'edit_item.html', {'item': item, 'form': form})
+
+
 def item_detail(request, item_id):
     item = get_object_or_404(Item, pk=item_id)
     if request.user.is_authenticated:

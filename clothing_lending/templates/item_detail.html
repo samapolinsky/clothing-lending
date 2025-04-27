@@ -411,7 +411,7 @@
                     {% if user.is_authenticated and user.user_type == 1 %}
                     <a href="{% url 'librarian_page' %}" class="btn btn-secondary">Back to Dashboard</a>
                     <div>
-                        <a href="#" class="btn btn-warning" style="display: inline-block; margin-left: 2rem;">Edit Item</a>
+                        <a href="{% url 'edit_item' item.id %}" class="btn btn-warning" style="display: inline-block; margin-left: 2rem;">Edit Item</a>
                         <form method="POST" action="/lending/items/{{ item.id }}/delete/" style="display: inline-block; margin-left: 0.3rem;">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-danger">Delete Item</button>
