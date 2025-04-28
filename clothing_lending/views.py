@@ -332,6 +332,7 @@ def add_item(request):
 # janky code to edit an item
 @user_passes_test(is_librarian)
 def edit_item(request, item_id):
+    orig_item = get_object_or_404(Item, pk=item_id)
     item = get_object_or_404(Item, pk=item_id)
     if request.method == 'POST':
         form = ItemForm(request.POST or None, request.FILES or None, instance=item)
@@ -339,8 +340,11 @@ def edit_item(request, item_id):
         if form.is_valid():
             print("Form is valid")
             item = form.save(commit=False) # update item!
-            librarian = Librarian.objects.get(user=request.user)
+            # oh crud bug fix AAAA
+            librarian = orig_item.created_by
+            created_at = orig_item.created_at
             item.created_by = librarian
+            item.created_at = created_at
 
             # Replace image upload to S3
             if 'image' in request.FILES:
@@ -400,7 +404,7 @@ def edit_item(request, item_id):
         else:
             print(f"Form errors: {form.errors}")
     else:
-        form = ItemForm(instance=item) # thanks to https://stackoverflow.com/questions/31406276/how-to-load-an-instance-in-django-modelforms
+        form = ItemForm(instance=orig_item) # thanks to https://stackoverflow.com/questions/31406276/how-to-load-an-instance-in-django-modelforms
     # I am adding a comment as a test please deploy github pretty please please pleaseeee
     return render(request, 'edit_item.html', {'item': item, 'form': form})
 
