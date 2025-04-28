@@ -23,7 +23,7 @@
 <body>
     <header>
         <div class="header-content">
-            <h1 class="scramble-text">AIRDROBE<br></h1>
+            <h1 class="scramble-text"><a href="{% url 'browse' %}" style="color: white; text-decoration: none;">AIRDROBE</a><br></h1>
             <nav>
                 {% if user.is_authenticated %}
                     {% if user.user_type == 2 %}
@@ -62,6 +62,13 @@
             </div>
             
             <div class="filter-section">
+                <h4>Search</h4>
+                <form class="search-form" onsubmit="return false;">
+                    <label>
+                        <input type="text" id="searchInput" name="q" placeholder="Search items..." value="{{ request.GET.q }}" class="form-control search-input">
+                    </label>
+                    <button type="submit" class="search-button" id="searchButton">Search</button>
+                </form>
                 <div class="filter-section">
                     <h4>Type</h4>
                     <div class="filter-options">
@@ -73,7 +80,7 @@
                     <h4>Categories</h4>
                     <div class="filter-options">
                         {% for category in categories %}
-                        <button class="filter-chip" data-category="{{ category }}">{{ category }}</button>
+                        <button class="filter-chip" data-category="{{ category.name }}">{{ category.name }}</button>
                         {% endfor %}
                     </div>
                     
@@ -118,8 +125,20 @@
                         </div>
                         <div class="item-details">
                             <div class="item-meta">
-                                <h3>{{ item.name }}</h3>
-                                <span class="item-category">{{ item.category }}</span>
+                                <h3 class="item-title">{{ item.name }}</h3>
+                                <span class="item-category">
+                                    {% with item.categories.all|slice:":2" as display_categories %}
+                                        {{ display_categories|join:", " }}
+                                        {% if item.categories.count > 2 %}
+                                            +{{ item.categories.count|add:"-2" }} more
+                                        {% endif %}
+                                    {% endwith %}
+                                </span>
+                                <span class="all-categories" style="display:none;">
+                                    {% for category in item.categories.all %}
+                                        {{ category.name }},
+                                    {% endfor %}
+                                </span>
                                 <span class="item-size">{{ item.get_size_display }}</span>
                                 <span class="item-status {% if item.available %}available{% else %}unavailable{% endif %}">
                                     {{ item.available|yesno:"Available,Unavailable" }}
@@ -135,7 +154,7 @@
                     {% if collection.is_private == False %}
                     <div class="card collection-card" data-collection-id="{{ collection.id }}" data-type="collection">
                         <div class="collection-details">
-                            <h3><a href="{% url 'collection_detail' collection.id %}">{{ collection.name }}</a></h3>
+                            <h3 class="collection-title"><a href="{% url 'collection_detail' collection.id %}">{{ collection.name }}</a></h3>
                             <p class="card-text">{{ collection.description }}</p>
                             <span class="collection-meta">Created by: {{ collection.created_by.email}}</span>
                         </div>
@@ -239,6 +258,49 @@
             display: flex;
             flex-direction: column;
             min-width: 0;
+        }
+
+        .search-form {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .search-input {
+            max-width: 300px;
+            width: 100%;
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 4px 0 0 4px;
+            border-right: none;
+            font-size: 0.9rem;
+            line-height: 1;
+            height: 42px;
+            box-sizing: border-box;
+        }
+
+        .search-button {
+            display: inline-flex;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            border: 1px solid #111;
+            border-left: none;
+            background-color: #111;
+            color: white;
+            font-size: 0.9rem;
+            line-height: 1;
+            height: 42px;
+            box-sizing: border-box;
+            cursor: pointer;
+            border-radius: 0 4px 4px 0;
+            max-width: 85px;
+            text-align: center;
+            width: fit-content;
+        }
+
+        .search-button:hover {
+            background-color: #333;
         }
 
         .user-info {
@@ -673,7 +735,10 @@
                 .map(chip => chip.getAttribute('data-category').toLowerCase());
             const selectedSizes = Array.from(document.querySelectorAll('.filter-chip[data-size].active'))
                 .map(chip => chip.getAttribute('data-size'));
-            
+
+            const searchInput = document.getElementById('searchInput');
+            const searchQuery = searchInput ? searchInput.value.trim().toLowerCase() : '';
+
             // Show or hide item filters based on selected type
             const itemFilters = document.getElementById('item-filters');
             if (selectedTypes.includes('items')) {
@@ -685,12 +750,17 @@
             // Get all item and collection cards
             const itemCards = document.querySelectorAll('.item-card');
             const collectionCards = document.querySelectorAll('.collection-card');
+
+            let hasVisibleItems = false;
             
             // Filter items
             itemCards.forEach(card => {
-                const category = card.querySelector('.item-category').textContent.toLowerCase();
+                // const category = card.querySelector('.item-category').textContent.toLowerCase();
+                const name = card.querySelector('.item-title')?.textContent.toLowerCase() || '';
+                const categoryText = card.querySelector('.all-categories')?.textContent.toLowerCase() || '';
+                const categories = categoryText.split(',').map(c => c.trim()).filter(c => c.length > 0);
                 const sizeText = card.querySelector('.item-size').textContent.replace('Size: ', '').trim();
-                
+
                 // Convert size display names to size codes for matching
                 let size;
                 if (sizeText.includes('Extra Small')) size = 'XS';
@@ -707,14 +777,20 @@
                 const matchesType = selectedTypes.length === 0 || selectedTypes.includes('items');
                 
                 // Check if item matches category filter (if any categories are selected)
-                const matchesCategory = selectedCategories.length === 0 || selectedCategories.some(c => category.includes(c));
-                
+                // const matchesCategory = selectedCategories.length === 0 || selectedCategories.some(c => category.includes(c));
+                const matchesCategory = selectedCategories.length === 0 || selectedCategories.some(selected =>
+                    categories.includes(selected)
+                );
+
                 // Check if item matches size filter (if any sizes are selected)
                 const matchesSize = selectedSizes.length === 0 || selectedSizes.includes(size);
+
+                const matchesSearch = searchQuery === '' || name.includes(searchQuery) || categories.some(c => c.includes(searchQuery));
                 
                 // Show item if it matches all active filters
-                if (matchesType && matchesCategory && matchesSize) {
+                if (matchesType && matchesCategory && matchesSize && matchesSearch) {
                     card.style.display = 'block';
+                    hasVisibleItems = true;
                 } else {
                     card.style.display = 'none';
                 }
@@ -723,26 +799,17 @@
             // Filter collections
             collectionCards.forEach(card => {
                 // Check if collection matches type filter
+                const name = card.querySelector('.collection-title')?.textContent.toLowerCase() || '';
+                const description = card.querySelector('.card-text')?.textContent.toLowerCase() || '';
                 const matchesType = selectedTypes.length === 0 || selectedTypes.includes('collections');
+                const matchesSearch = searchQuery === '' || name.includes(searchQuery) || description.includes(searchQuery);
                 
                 // Show collection if it matches the type filter
-                if (matchesType) {
+                if (matchesType && matchesSearch) {
                     card.style.display = 'block';
+                    hasVisibleItems = true;
                 } else {
                     card.style.display = 'none';
-                }
-            });
-            
-            // Check if any items or collections are visible
-            let hasVisibleItems = false;
-            itemCards.forEach(card => {
-                if (card.style.display !== 'none') {
-                    hasVisibleItems = true;
-                }
-            });
-            collectionCards.forEach(card => {
-                if (card.style.display !== 'none') {
-                    hasVisibleItems = true;
                 }
             });
             
@@ -771,6 +838,14 @@
             document.querySelectorAll('.filter-chip.active').forEach(chip => {
                 chip.classList.remove('active');
             });
+            const itemsChip = document.querySelector('.filter-chip[data-type="items"]');
+            if (itemsChip) {
+                itemsChip.classList.add('active');
+            }
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.value = '';
+            }
             document.querySelector('.filter-chip[data-type="items"]').classList.add('active');
             applyFilters();
         }
@@ -784,6 +859,24 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            const searchButton = document.getElementById('searchButton');
+
+            if (searchInput) {
+                // As you type, immediately filter
+                searchInput.addEventListener('input', () => {
+                    applyFilters();
+                });
+            }
+
+            if (searchButton) {
+                // If user clicks the search button manually
+                searchButton.addEventListener('click', () => {
+                    applyFilters();
+                });
+            }
+
+
             // Get all items with s3_image_key
             const itemImages = document.querySelectorAll('.item-img[data-item-id]');
             

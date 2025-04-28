@@ -194,7 +194,7 @@
 <body>
     <header>
         <div class="header-content">
-            <h1>AIRDROBE</h1>
+            <h1><a href="{% url 'browse' %}" style="color: white; text-decoration: none;">AIRDROBE</a></h1>
             <div class="nav-actions">
                 <a href="{% url 'librarian_page' %}" class="btn btn-secondary">Dashboard</a>
                 <a href="{% url 'browse' %}" class="btn btn-secondary">Browse Items</a>
@@ -241,11 +241,21 @@
                     
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="{{ form.category.id_for_label }}" class="form-label">Category</label>
-                            {{ form.category }}
-                            {% if form.category.errors %}
+                            <label for="{{ form.categories.id_for_label }}" class="form-label">Categories</label>
+                            {{ form.categories }}
+                            {% if form.categories.errors %}
                             <div class="text-danger">
-                                {{ form.category.errors }}
+                                {{ form.categories.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.new_category.id_for_label }}" class="form-label">Or Add a New Category</label>
+                            {{ form.new_category }}
+                            {% if form.new_category.errors %}
+                            <div class="text-danger">
+                                {{ form.new_category.errors }}
                             </div>
                             {% endif %}
                         </div>

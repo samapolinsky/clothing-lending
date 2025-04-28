@@ -309,7 +309,7 @@
 <body>
     <header>
         <div class="header-content">
-            <h1>AIRDROBE DASHBOARD</h1>
+            <h1><a href="{% url 'browse' %}" style="color: white; text-decoration: none;">AIRDROBE DASHBOARD</a></h1>
             <div class="nav-actions">
                 {% if user.is_authenticated %}
                     <a href="{% url 'patron_page' %}" class="btn btn-secondary">Back to Dashboard</a>
@@ -342,6 +342,11 @@
                         {{ form.profile_picture.errors }}
                     </div>
                 {% endif %}
+            </div>
+            <br>
+            <div class="mb-3">
+                <label class="form-label">Member Since:</label>
+                <p class="form-control-static">{{ user.date_joined|date:"F j, Y" }}</p>
             </div>
             <br>
             <button type="submit" class="btn btn-primary">Save Profile</button>

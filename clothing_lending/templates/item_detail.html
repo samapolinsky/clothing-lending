@@ -321,7 +321,7 @@
 <body>
     <header>
         <div class="header-content">
-            <h1>AIRDROBE</h1>
+            <h1><a href="{% url 'browse' %}" style="color: white; text-decoration: none;">AIRDROBE</a></h1>
             <div class="nav-actions">
                 {% if user.is_authenticated %}
                     {% if user.user_type == 1 %}
@@ -384,7 +384,12 @@
                 
                 <ul class="detail-list">
                     <li>
-                        <strong>Category:</strong> {{ item.category }}
+                        <strong>Categories:</strong>
+                        {% for category in item.categories.all %}
+                            {{ category.name }}{% if not forloop.last %}, {% endif %}
+                        {% empty %}
+                            Uncategorized
+                        {% endfor %}
                     </li>
                     <li>
                         <strong>Size:</strong> {{ item.get_size_display }}
@@ -417,7 +422,7 @@
                     <a href="{% url 'librarian_page' %}" class="btn btn-secondary">Back to Dashboard</a>
                     <div>
                         <a href="{% url 'edit_item' item.id %}" class="btn btn-warning" style="display: inline-block; margin-left: 2rem;">Edit Item</a>
-                        <form method="POST" action="/lending/items/{{ item.id }}/delete/" style="display: inline-block; margin-left: 0.3rem;">
+                        <form method="POST" action="/lending/items/{{ item.id }}/delete/" style="display: inline-block; margin-left: 0.3rem;" onsubmit="return confirm('Are you sure you want to delete this item? This action cannot be undone.');">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-danger">Delete Item</button>
                         </form>
