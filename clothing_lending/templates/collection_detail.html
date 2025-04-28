@@ -48,8 +48,10 @@
         
         .main-container {
             max-width: 1400px;
+            width: 100%;
             margin: 3rem auto;
             padding: 0 2rem;
+            box-sizing: border-box;
         }
         
         .btn {
@@ -175,8 +177,19 @@
         
         .items-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 2rem;
+            width: 100%;
+            padding: 2rem 2rem;
+            box-sizing: border-box;
+            min-height: 300px;
+        }
+
+        .items-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
         }
         
         .item-card {
@@ -220,9 +233,8 @@
         }
         
         .item-meta h3 {
-            font-family: 'Space Grotesk', sans-serif;
-            margin: 0 0 0.75rem;
-            font-size: 1.2rem;
+            margin: 0 0 0.5rem;
+            font-size: 1.1rem;
             font-weight: 600;
         }
         
@@ -232,13 +244,24 @@
             font-size: 0.9rem;
             color: #666;
         }
+
+        .item-category, .item-size {
+            display: inline-block;
+            margin-right: 1rem;
+            font-size: 0.85rem;
+            color: #666;
+        }
         
         .item-status {
             padding: 0.25rem 0.5rem;
             border-radius: 50px;
-            font-size: 0.8rem;
+            font-size: 0.6rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
+            /*display: block;*/
+            /*margin-top: 0.5rem;*/
+            /*font-size: 0.85rem;*/
+            /*font-weight: 500;*/
         }
         
         .item-status.available {
@@ -287,6 +310,42 @@
         .nav-actions {
             display: flex;
             gap: 1rem;
+        }
+
+        .collection-search-bar {
+            display: flex;
+            width: 100%;
+            max-width: 600px;
+            justify-content: center;
+            align-items: center;
+            gap: 0;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 0;
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            height: 42px;
+            box-sizing: border-box;
+        }
+
+        .card-body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .no-items {
+            grid-column: 1 / -1;
+            background: white;
+            padding: 3rem;
+            text-align: center;
+            color: #666;
+            border-radius: 4px;
         }
     </style>
 </head>
@@ -337,8 +396,15 @@
             </div>
         </div>
 
-        <h2 class="section-heading">Items in {{ collection.name }}</h2>
-        
+            <div class="card-body">
+                <form class="collection-search-bar" onsubmit="return false;">
+                    <input type="text" id="searchInput" name="q" placeholder="Search items in collection..." value="{{ request.GET.q }}" class="form-control search-input">
+                </form>
+            </div>
+
+
+        <div class="items-area">
+            <h2 class="section-heading">Items in {{ collection.name }}</h2>
         <div class="items-grid">
             {% for item in items %}
             <div class="item-card" data-item-id="{{ item.id }}">
@@ -360,7 +426,7 @@
                 </div>
                 <div class="item-details">
                     <div class="item-meta">
-                        <h3>{{ item.name }}</h3>
+                        <h3 class="item-title">{{ item.name }}</h3>
                         <span class="item-category">
                             {% with item.categories.all|slice:":2" as display_categories %}
                                 {{ display_categories|join:", " }}
@@ -382,6 +448,7 @@
             </div>
             {% endfor %}
         </div>
+        </div>
         {% else %}
         <div class="alert alert-info" style="text-align: center;">
             <p>You need to be invited to this collection to view.</p>
@@ -400,10 +467,79 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        @media (max-width: 768px) {
+            .items-area {
+                width: 100%;
+            }
+        }
     </style>
 
     <script>
+        function createNoItemsMessage() {
+            const noItems = document.createElement('div');
+            noItems.className = 'no-items';
+            noItems.innerHTML = '<p>No items match the search.</p>';
+
+            const itemsGrid = document.querySelector('.items-grid');
+            itemsGrid.appendChild(noItems);
+            return noItems;
+        }
+        function applyCollectionFilters() {
+            const searchInput = document.getElementById('searchInput');
+            const searchQuery = searchInput ? searchInput.value.trim().toLowerCase() : '';
+
+            const itemCards = document.querySelectorAll('.item-card');
+            let hasVisibleItems = false;
+
+            itemCards.forEach(card => {
+                const name = card.querySelector('.item-title')?.textContent.toLowerCase() || '';
+                const categoryText = card.querySelector('.item-category')?.textContent.toLowerCase() || '';
+                const sizeText = card.querySelector('.item-size')?.textContent.replace('Size: ', '').trim().toLowerCase();
+
+                const matchesSearch =
+                    searchQuery === '' ||
+                    name.includes(searchQuery) ||
+                    categoryText.includes(searchQuery) ||
+                    sizeText.includes(searchQuery);
+
+                if (matchesSearch) {
+                    card.style.display = 'block';
+                    hasVisibleItems = true;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            const noItemsMessage = document.querySelector('.no-items') || createNoItemsMessage();
+            if (noItemsMessage) {
+                if (!hasVisibleItems) {
+                    noItemsMessage.style.display = 'block';
+                } else {
+                    noItemsMessage.style.display = 'none';
+                }
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            const searchButton = document.getElementById('searchButton');
+
+            if (searchInput) {
+                // As you type, immediately filter
+                searchInput.addEventListener('input', () => {
+                    applyCollectionFilters();
+                });
+            }
+
+            if (searchButton) {
+                // If user clicks the search button manually
+                searchButton.addEventListener('click', () => {
+                    applyCollectionFilters();
+                });
+            }
+
+
             // Get all items with s3_image_key
             const itemImages = document.querySelectorAll('.item-img[data-item-id]');
 

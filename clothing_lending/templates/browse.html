@@ -134,6 +134,11 @@
                                         {% endif %}
                                     {% endwith %}
                                 </span>
+                                <span class="all-categories" style="display:none;">
+                                    {% for category in item.categories.all %}
+                                        {{ category.name }},
+                                    {% endfor %}
+                                </span>
                                 <span class="item-size">{{ item.get_size_display }}</span>
                                 <span class="item-status {% if item.available %}available{% else %}unavailable{% endif %}">
                                     {{ item.available|yesno:"Available,Unavailable" }}
@@ -149,7 +154,7 @@
                     {% if collection.is_private == False %}
                     <div class="card collection-card" data-collection-id="{{ collection.id }}" data-type="collection">
                         <div class="collection-details">
-                            <h3><a href="{% url 'collection_detail' collection.id %}">{{ collection.name }}</a></h3>
+                            <h3 class="collection-title"><a href="{% url 'collection_detail' collection.id %}">{{ collection.name }}</a></h3>
                             <p class="card-text">{{ collection.description }}</p>
                             <span class="collection-meta">Created by: {{ collection.created_by.email}}</span>
                         </div>
@@ -752,8 +757,8 @@
             itemCards.forEach(card => {
                 // const category = card.querySelector('.item-category').textContent.toLowerCase();
                 const name = card.querySelector('.item-title')?.textContent.toLowerCase() || '';
-                const categoryText = card.querySelector('.item-category').textContent.toLowerCase();
-                const categories = categoryText.split(',').map(c => c.trim());
+                const categoryText = card.querySelector('.all-categories')?.textContent.toLowerCase() || '';
+                const categories = categoryText.split(',').map(c => c.trim()).filter(c => c.length > 0);
                 const sizeText = card.querySelector('.item-size').textContent.replace('Size: ', '').trim();
 
                 // Convert size display names to size codes for matching
@@ -780,7 +785,7 @@
                 // Check if item matches size filter (if any sizes are selected)
                 const matchesSize = selectedSizes.length === 0 || selectedSizes.includes(size);
 
-                const matchesSearch = searchQuery === '' || name.includes(searchQuery);
+                const matchesSearch = searchQuery === '' || name.includes(searchQuery) || categories.some(c => c.includes(searchQuery));
                 
                 // Show item if it matches all active filters
                 if (matchesType && matchesCategory && matchesSize && matchesSearch) {
@@ -795,8 +800,9 @@
             collectionCards.forEach(card => {
                 // Check if collection matches type filter
                 const name = card.querySelector('.collection-title')?.textContent.toLowerCase() || '';
+                const description = card.querySelector('.card-text')?.textContent.toLowerCase() || '';
                 const matchesType = selectedTypes.length === 0 || selectedTypes.includes('collections');
-                const matchesSearch = searchQuery === '' || name.includes(searchQuery);
+                const matchesSearch = searchQuery === '' || name.includes(searchQuery) || description.includes(searchQuery);
                 
                 // Show collection if it matches the type filter
                 if (matchesType && matchesSearch) {
