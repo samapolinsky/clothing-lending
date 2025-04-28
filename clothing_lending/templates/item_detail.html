@@ -412,7 +412,7 @@
                     <a href="{% url 'librarian_page' %}" class="btn btn-secondary">Back to Dashboard</a>
                     <div>
                         <a href="{% url 'edit_item' item.id %}" class="btn btn-warning" style="display: inline-block; margin-left: 2rem;">Edit Item</a>
-                        <form method="POST" action="/lending/items/{{ item.id }}/delete/" style="display: inline-block; margin-left: 0.3rem;">
+                        <form method="POST" action="/lending/items/{{ item.id }}/delete/" style="display: inline-block; margin-left: 0.3rem;" onsubmit="return confirm('Are you sure you want to delete this item? This action cannot be undone.');">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-danger">Delete Item</button>
                         </form>
