@@ -377,7 +377,7 @@
                 <h2 class="item-title">{{ item.name }}</h2>
                 <p class="item-description">{{ item.description }}</p>
                 {% if ratings %}
-                    <p>{{ avg }} out of 5</p>
+                    <p>{{ avg }} ★</p>
                 {% else %}
                     <p>No Rating</p>
                 {% endif %}
@@ -474,7 +474,7 @@
                 <ul class="detail-list">
                     {% for rating in ratings %}
                     <!-- I am going to add stuff to show username/profile pic and timestamp laterrrrr -->
-                        <li><strong>{{ rating.num_rating }} out of 5:</strong> {{ rating.comment }}</li>
+                        <li><strong>{{ rating.num_rating }} ★:</strong> {{ rating.comment }}</li>
                     {% endfor %}
                 </ul>
                 {% else %}

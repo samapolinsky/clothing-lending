@@ -570,6 +570,44 @@
                     {% endif %}
                 </div>
             </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h4>My Reviews</h4>
+                </div>
+                <div class="card-body">
+                    {% if my_ratings %}
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Rating</th>
+                                        <th>Reviewed On</th>
+                                        <th>Comments</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for rating in my_ratings %}
+                                    <tr>
+                                        <td>
+                                            <a href="{% url 'item_detail' rating.item.id %}" class="title-link">{{ rating.item.name }}</a>
+                                        </td>
+                                        <td>{{ rating.num_rating }} ★</td>
+                                        <td>{{ rating.rate_date|date:"M d, Y" }}</td>
+                                        <td>{{ rating.comment }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-secondary">
+                            You have no reviews.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
         {% else %}
             <div class="alert alert-info">
                 <p>You need to be logged in to access this page.</p>

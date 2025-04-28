@@ -802,6 +802,11 @@ def patron_page(request):
         status='PENDING'
     ).order_by('-request_date')
 
+    # and reviews!
+    my_ratings = Rating.objects.filter(
+        rater=patron
+    ).order_by('-rate_date')[:10]  # Show last 10 items rated
+
     context = {
         'collections': collections,
         'patron': patron,
@@ -809,6 +814,7 @@ def patron_page(request):
         'pending_invites': pending_invites,
         'approved_items': approved_items,
         'borrowing_history': borrowing_history,
+        'my_ratings': my_ratings
     }
 
     return render(request, 'patron/page.html', context)
