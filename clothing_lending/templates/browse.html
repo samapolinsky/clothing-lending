@@ -63,9 +63,11 @@
             
             <div class="filter-section">
                 <h4>Search</h4>
-                <form method="GET" action="" class="search-form">
-                    <input type="text" name="q" placeholder="Search items..." value="{{ request.GET.q }}" class="form-control search-input">
-                    <button type="submit" class="search-button">Search</button>
+                <form class="search-form" onsubmit="return false;">
+                    <label>
+                        <input type="text" id="searchInput" name="q" placeholder="Search items..." value="{{ request.GET.q }}" class="form-control search-input">
+                    </label>
+                    <button type="submit" class="search-button" id="searchButton">Search</button>
                 </form>
                 <div class="filter-section">
                     <h4>Type</h4>
@@ -123,7 +125,7 @@
                         </div>
                         <div class="item-details">
                             <div class="item-meta">
-                                <h3>{{ item.name }}</h3>
+                                <h3 class="item-title">{{ item.name }}</h3>
                                 <span class="item-category">
                                     {% for category in item.categories.all %}
                                         {{ category.name }}{% if not forloop.last %}, {% endif %}
@@ -252,8 +254,6 @@
 
         .search-form {
             display: flex;
-            /*flex-direction: column;*/
-            gap: 0.5rem;
             align-items: center;
             margin-bottom: 2rem;
         }
@@ -265,18 +265,29 @@
             padding: 0.75rem;
             border: 1px solid #ccc;
             border-radius: 4px 0 0 4px;
-            font-size: 1rem;
+            border-right: none;
+            font-size: 0.9rem;
+            line-height: 1;
+            height: 42px;
+            box-sizing: border-box;
         }
 
         .search-button {
+            display: inline-flex;
+            justify-content: center;
             padding: 0.75rem 1.5rem;
-            border: 1px solid #ddd;
+            border: 1px solid #111;
+            border-left: none;
             background-color: #111;
             color: white;
-            font-size: 1rem;
+            font-size: 0.9rem;
+            line-height: 1;
+            height: 42px;
+            box-sizing: border-box;
             cursor: pointer;
-            border-radius: 4px;
-            max-width: 300px;
+            border-radius: 0 4px 4px 0;
+            max-width: 85px;
+            text-align: center;
             width: fit-content;
         }
 
@@ -716,7 +727,10 @@
                 .map(chip => chip.getAttribute('data-category').toLowerCase());
             const selectedSizes = Array.from(document.querySelectorAll('.filter-chip[data-size].active'))
                 .map(chip => chip.getAttribute('data-size'));
-            
+
+            const searchInput = document.getElementById('searchInput');
+            const searchQuery = searchInput ? searchInput.value.trim().toLowerCase() : '';
+
             // Show or hide item filters based on selected type
             const itemFilters = document.getElementById('item-filters');
             if (selectedTypes.includes('items')) {
@@ -728,14 +742,17 @@
             // Get all item and collection cards
             const itemCards = document.querySelectorAll('.item-card');
             const collectionCards = document.querySelectorAll('.collection-card');
+
+            let hasVisibleItems = false;
             
             // Filter items
             itemCards.forEach(card => {
                 // const category = card.querySelector('.item-category').textContent.toLowerCase();
+                const name = card.querySelector('.item-title')?.textContent.toLowerCase() || '';
                 const categoryText = card.querySelector('.item-category').textContent.toLowerCase();
                 const categories = categoryText.split(',').map(c => c.trim());
                 const sizeText = card.querySelector('.item-size').textContent.replace('Size: ', '').trim();
-                
+
                 // Convert size display names to size codes for matching
                 let size;
                 if (sizeText.includes('Extra Small')) size = 'XS';
@@ -759,10 +776,13 @@
 
                 // Check if item matches size filter (if any sizes are selected)
                 const matchesSize = selectedSizes.length === 0 || selectedSizes.includes(size);
+
+                const matchesSearch = searchQuery === '' || name.includes(searchQuery);
                 
                 // Show item if it matches all active filters
-                if (matchesType && matchesCategory && matchesSize) {
+                if (matchesType && matchesCategory && matchesSize && matchesSearch) {
                     card.style.display = 'block';
+                    hasVisibleItems = true;
                 } else {
                     card.style.display = 'none';
                 }
@@ -771,26 +791,16 @@
             // Filter collections
             collectionCards.forEach(card => {
                 // Check if collection matches type filter
+                const name = card.querySelector('.collection-title')?.textContent.toLowerCase() || '';
                 const matchesType = selectedTypes.length === 0 || selectedTypes.includes('collections');
+                const matchesSearch = searchQuery === '' || name.includes(searchQuery);
                 
                 // Show collection if it matches the type filter
-                if (matchesType) {
+                if (matchesType && matchesSearch) {
                     card.style.display = 'block';
+                    hasVisibleItems = true;
                 } else {
                     card.style.display = 'none';
-                }
-            });
-            
-            // Check if any items or collections are visible
-            let hasVisibleItems = false;
-            itemCards.forEach(card => {
-                if (card.style.display !== 'none') {
-                    hasVisibleItems = true;
-                }
-            });
-            collectionCards.forEach(card => {
-                if (card.style.display !== 'none') {
-                    hasVisibleItems = true;
                 }
             });
             
@@ -819,6 +829,14 @@
             document.querySelectorAll('.filter-chip.active').forEach(chip => {
                 chip.classList.remove('active');
             });
+            const itemsChip = document.querySelector('.filter-chip[data-type="items"]');
+            if (itemsChip) {
+                itemsChip.classList.add('active');
+            }
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.value = '';
+            }
             document.querySelector('.filter-chip[data-type="items"]').classList.add('active');
             applyFilters();
         }
@@ -832,6 +850,24 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            const searchButton = document.getElementById('searchButton');
+
+            if (searchInput) {
+                // As you type, immediately filter
+                searchInput.addEventListener('input', () => {
+                    applyFilters();
+                });
+            }
+
+            if (searchButton) {
+                // If user clicks the search button manually
+                searchButton.addEventListener('click', () => {
+                    applyFilters();
+                });
+            }
+
+
             // Get all items with s3_image_key
             const itemImages = document.querySelectorAll('.item-img[data-item-id]');
             
