@@ -127,9 +127,12 @@
                             <div class="item-meta">
                                 <h3 class="item-title">{{ item.name }}</h3>
                                 <span class="item-category">
-                                    {% for category in item.categories.all %}
-                                        {{ category.name }}{% if not forloop.last %}, {% endif %}
-                                    {% endfor %}
+                                    {% with item.categories.all|slice:":2" as display_categories %}
+                                        {{ display_categories|join:", " }}
+                                        {% if item.categories.count > 2 %}
+                                            +{{ item.categories.count|add:"-2" }} more
+                                        {% endif %}
+                                    {% endwith %}
                                 </span>
                                 <span class="item-size">{{ item.get_size_display }}</span>
                                 <span class="item-status {% if item.available %}available{% else %}unavailable{% endif %}">

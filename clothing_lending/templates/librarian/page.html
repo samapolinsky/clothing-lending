@@ -357,9 +357,12 @@
                                         <div>
                                             <a href="{% url 'item_detail' item.id %}" class="title-link">{{ item.name }}</a>
                                             <p class="meta-text">
-                                                {% for category in item.categories.all %}
-                                                    {{ category.name }}{% if not forloop.last %}, {% endif %}
-                                                {% endfor %}
+                                                {% with item.categories.all|slice:":2" as display_categories %}
+                                                    {{ display_categories|join:", " }}
+                                                    {% if item.categories.count > 2 %}
+                                                        +{{ item.categories.count|add:"-2" }} more
+                                                    {% endif %}
+                                                {% endwith %}
                                                 • {{ item.get_size_display }}
                                             </p>
                                         </div>
@@ -403,9 +406,13 @@
                                         <td>
                                             <a href="{% url 'item_detail' request.item.id %}" class="title-link">{{ request.item.name }}</a>
                                         </td>
-                                        <td>{% for category in request.item.categories.all %}
-                                                {{ category.name }}{% if not forloop.last %}, {% endif %}
-                                            {% endfor %}
+                                        <td>
+                                            {% with item.categories.all|slice:":2" as display_categories %}
+                                                {{ display_categories|join:", " }}
+                                                {% if item.categories.count > 2 %}
+                                                    +{{ item.categories.count|add:"-2" }} more
+                                                {% endif %}
+                                            {% endwith %}
                                         </td>
                                         <td>{{ request.borrower.user.username }}</td>
                                         <td>{{ request.request_date|date:"M d, Y" }}</td>

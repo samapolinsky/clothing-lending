@@ -704,9 +704,12 @@ def promote_user(request):
 @user_passes_test(is_librarian)
 def delete_item(request, item_id):
     item = get_object_or_404(Item, pk=item_id)
-    item.delete()
-    messages.success(request, 'Item deleted successfully.')
-    return redirect('librarian_page')
+    if request.method == 'POST':
+        item.categories.clear()
+        item.delete()
+        messages.success(request, 'Item deleted successfully!')
+        return redirect('librarian_page')
+
 
 def collection_detail(request, collection_id):
     collection = get_object_or_404(Collection, pk=collection_id)
