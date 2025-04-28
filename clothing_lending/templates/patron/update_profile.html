@@ -344,6 +344,11 @@
                 {% endif %}
             </div>
             <br>
+            <div class="mb-3">
+                <label class="form-label">Member Since:</label>
+                <p class="form-control-static">{{ user.date_joined|date:"F j, Y" }}</p>
+            </div>
+            <br>
             <button type="submit" class="btn btn-primary">Save Profile</button>
         </form>
         </div>
