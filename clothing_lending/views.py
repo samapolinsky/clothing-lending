@@ -461,6 +461,18 @@ def rate_item(request, item_id):
             #numrating = form.cleaned_data['numrating']
             #comment = form.cleaned_data['comment']
 
+            # Check if user already has rated this item
+            existing_rating = Rating.objects.filter(
+                item=item,
+                rater=patron,
+            ).exists()
+
+            print(f"Existing rating check: {existing_rating}")  # Debug print
+
+            if existing_rating:
+                messages.warning(request, 'You cannot review the same item twice.')
+                return redirect('item_detail', item_id=item_id)
+
             rating = form.save(commit=False) # make a rating!
             rating.rater = patron
             rating.item = item
