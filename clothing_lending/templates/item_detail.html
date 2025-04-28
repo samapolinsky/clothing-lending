@@ -186,6 +186,12 @@
             border-bottom: none;
         }
 
+        .rating-detail-list li strong {
+            min-width: 160px;
+            display: inline-block;
+            font-weight: 600;
+        }
+
         .collections-list {
             list-style-type: disc;
             padding-left: 1.5rem;
@@ -476,7 +482,7 @@
                 <br>
                 <h3>Reviews</h3>
                 {% if ratings %}
-                <ul class="detail-list">
+                <ul class="detail-list rating-detail-list">
                     {% for rating in ratings %}
                     <!-- I am going to add stuff to show profile pic and timestamp laterrrrr -->
                         <li><strong>{{ rating.num_rating }} ★ - <em>{{ rating.rate_date|date:"M d, Y" }}</em></strong> "{{ rating.comment }}" - {{rating.rater.custom_username}}</li>
