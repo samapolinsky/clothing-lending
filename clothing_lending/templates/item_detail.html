@@ -478,8 +478,8 @@
                 {% if ratings %}
                 <ul class="detail-list">
                     {% for rating in ratings %}
-                    <!-- I am going to add stuff to show username/profile pic and timestamp laterrrrr -->
-                        <li><strong>{{ rating.num_rating }} ★:</strong> {{ rating.comment }}</li>
+                    <!-- I am going to add stuff to show profile pic and timestamp laterrrrr -->
+                        <li><strong>{{ rating.num_rating }} ★ - {{rating.rater.custom_username}}</strong> <em>{{ rating.rate_date|date:"M d, Y" }}</em> "{{ rating.comment }}"</li>
                     {% endfor %}
                 </ul>
                 {% else %}
