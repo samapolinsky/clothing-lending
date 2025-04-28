@@ -356,7 +356,12 @@
                                     <div class="list-group-item">
                                         <div>
                                             <a href="{% url 'item_detail' item.id %}" class="title-link">{{ item.name }}</a>
-                                            <p class="meta-text">{{ item.category }} • {{ item.get_size_display }}</p>
+                                            <p class="meta-text">
+                                                {% for category in item.categories.all %}
+                                                    {{ category.name }}{% if not forloop.last %}, {% endif %}
+                                                {% endfor %}
+                                                • {{ item.get_size_display }}
+                                            </p>
                                         </div>
                                         <span class="badge {% if item.available %}badge-success{% else %}badge-danger{% endif %}">
                                             {% if item.available %}Available{% else %}Not Available{% endif %}
@@ -398,7 +403,10 @@
                                         <td>
                                             <a href="{% url 'item_detail' request.item.id %}" class="title-link">{{ request.item.name }}</a>
                                         </td>
-                                        <td>{{ request.item.category }}</td>
+                                        <td>{% for category in request.item.categories.all %}
+                                                {{ category.name }}{% if not forloop.last %}, {% endif %}
+                                            {% endfor %}
+                                        </td>
                                         <td>{{ request.borrower.user.username }}</td>
                                         <td>{{ request.request_date|date:"M d, Y" }}</td>
                                         <td class="lending-action-buttons">
@@ -498,7 +506,11 @@
                                         <td>
                                             <a href="{% url 'item_detail' lending.item.id %}" class="title-link">{{ lending.item.name }}</a>
                                         </td>
-                                        <td>{{ lending.item.category }}</td>
+                                        <td>
+                                            {% for category in lending.item.categories.all %}
+                                                {{ category.name }}{% if not forloop.last %}, {% endif %}
+                                            {% endfor %}
+                                        </td>
                                         <td>{{ lending.borrower.user.username }}</td>
                                         <td>{{ lending.approved_date|date:"M d, Y" }}</td>
                                         <td>

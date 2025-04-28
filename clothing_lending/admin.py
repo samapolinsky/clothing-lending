@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User, Patron, Librarian, Collection, Item, Lending
+from .models import User, Patron, Librarian, Collection, Item, Lending, Category
 
 
 # Inline for Librarian model
@@ -39,10 +39,20 @@ class CollectionAdmin(admin.ModelAdmin):
 
 @admin.register(Item)
 class ItemAdmin(admin.ModelAdmin):
-    list_display = ('name', 'category', 'size', 'condition', 'available', 'created_by', 'created_at', 'updated_at')
+    list_display = ('name', 'get_categories', 'category', 'size', 'condition', 'available', 'created_by', 'created_at', 'updated_at')
     list_filter = ('category', 'size', 'condition', 'available', 'created_by', 'created_at', 'updated_at')
     search_fields = ('name', 'description', 'category')
-    filter_horizontal = ('collections',)  # Add this line to enable many-to-many field in admin
+    filter_horizontal = ('collections', 'categories', )  # Add this line to enable many-to-many field in admin
+
+    def get_categories(self, obj):
+        return ", ".join([c.name for c in obj.categories.all()])
+    get_categories.short_description = 'Categories'
+
+
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    search_fields = ('name',)
+    
 
 admin.site.register(Librarian)
 admin.site.register(Patron)
