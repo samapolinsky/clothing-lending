@@ -479,7 +479,7 @@
                 <ul class="detail-list">
                     {% for rating in ratings %}
                     <!-- I am going to add stuff to show profile pic and timestamp laterrrrr -->
-                        <li><strong>{{ rating.num_rating }} ★ - {{rating.rater.custom_username}}</strong> <em>{{ rating.rate_date|date:"M d, Y" }}</em> "{{ rating.comment }}"</li>
+                        <li><strong>{{ rating.num_rating }} ★ - <em>{{ rating.rate_date|date:"M d, Y" }}</em></strong> "{{ rating.comment }}" - {{rating.rater.custom_username}}</li>
                     {% endfor %}
                 </ul>
                 {% else %}
