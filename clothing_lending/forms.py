@@ -14,18 +14,23 @@ class CollectionForm(forms.ModelForm):
 
 class ItemForm(forms.ModelForm):
     image = forms.ImageField(required=False, widget=forms.FileInput(attrs={'class': 'form-control'}))
+    new_category = forms.CharField(required=False, label='New Category')
     
     class Meta:
         model = Item
-        fields = ['name', 'description', 'category', 'size', 'condition', 'available']
+        fields = ['name', 'description', 'categories', 'size', 'condition', 'available']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
-            'category': forms.TextInput(attrs={'class': 'form-control'}),
+            'categories': forms.CheckboxSelectMultiple(),
             'size': forms.Select(attrs={'class': 'form-control'}),
             'condition': forms.Select(attrs={'class': 'form-control'}),
             'available': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['categories'].required = False
     
     def clean_image(self):
         """

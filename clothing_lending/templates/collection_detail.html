@@ -329,7 +329,7 @@
                 <a href="{% url 'browse' %}" class="btn btn-secondary">Back to Browse</a>
                 {% endif %}
                 {% if user.is_authenticated and user.user_type == 1 %}
-                <form method="POST" action="{% url 'delete_collection' collection.id %}">
+                <form method="POST" action="{% url 'delete_collection' collection.id %}" onsubmit="return confirm('Are you sure you want to delete this collection? This action cannot be undone.');">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-danger">Delete Collection</button>
                 </form>
@@ -361,7 +361,14 @@
                 <div class="item-details">
                     <div class="item-meta">
                         <h3>{{ item.name }}</h3>
-                        <span class="item-category">{{ item.category }}</span>
+                        <span class="item-category">
+                            {% with item.categories.all|slice:":2" as display_categories %}
+                                {{ display_categories|join:", " }}
+                                {% if item.categories.count > 2 %}
+                                    +{{ item.categories.count|add:"-2" }} more
+                                {% endif %}
+                            {% endwith %}
+                        </span>
                         <span class="item-size">{{ item.get_size_display }}</span>
                         <span class="item-status {% if item.available %}available{% else %}unavailable{% endif %}">
                             {{ item.available|yesno:"Available,Unavailable" }}

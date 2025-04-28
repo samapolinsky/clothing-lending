@@ -8,7 +8,7 @@ import uuid
 from django.db.models import Q
 from django.utils import timezone
 
-from clothing_lending.models import User, Patron, Librarian, Collection, Item, Lending, Invite
+from clothing_lending.models import User, Patron, Librarian, Collection, Item, Lending, Invite, Category
 from clothing_lending.forms import CollectionForm, ItemForm, PromoteUserForm, AddItemToCollectionForm, PatronProfileForm
 from clothing_lending.s3_utils import upload_file_to_s3, get_s3_client, generate_presigned_url, delete_file_from_s3
 
@@ -144,38 +144,78 @@ def google_oauth_callback(request):
 
 
 def browse(request):
-    """
-    View to browse all available items
-    """
-    # Get all available items
-    # items = Item.objects.filter(available=True)
+    query = request.GET.get('q')
 
-    # Get all collections
-    # Ok, looks like I need to make separate "allowed" and "restricted" collections
     if request.user.is_authenticated and request.user.user_type == 1:
         collections = Collection.objects.all()
-        restricted_collections = Collection.objects.none() # nothing restricted
-        # items = Item.objects.filter(available=True)
-        items = Item.objects.all()
-    if request.user.is_authenticated and request.user.user_type == 2:
+
+        if query:
+            items = Item.objects.filter(
+                Q(name__icontains=query) | Q(categories__name__icontains=query)
+            ).distinct()
+            collections = Collection.objects.filter(
+                Q(name__icontains=query)
+            ).distinct()
+        else:
+            items = Item.objects.all()
+            collections = Collection.objects.all()
+
+        restricted_collections = Collection.objects.none()
+
+    elif request.user.is_authenticated and request.user.user_type == 2:
         try:
             patron = request.user.patron
-            collections = Collection.objects.filter(Q(is_private=False) | Q(allowed_patrons=patron))
-            # Ok, so patrons are supposed to see ALL collections' titles, but they cannot see private content unless given access
+
+            if query:
+                items = Item.objects.filter(
+                    Q(available=True) &
+                    (Q(private_collection=False) | Q(collections__allowed_patrons=patron)) &
+                    (Q(name__icontains=query) | Q(categories__name__icontains=query))
+                ).distinct()
+                collections = Collection.objects.filter(
+                    (Q(is_private=False) | Q(allowed_patrons=patron)) &
+                    Q(name__icontains=query))
+            else:
+                items = Item.objects.filter(
+                    Q(available=True) &
+                    (Q(private_collection=False) | Q(collections__allowed_patrons=patron))
+                ).distinct()
+                collections = Collection.objects.filter(Q(is_private=False) | Q(allowed_patrons=patron))
             restricted_collections = Collection.objects.exclude(Q(is_private=False) | Q(allowed_patrons=patron))
-            #print(restricted_collections)
-            items = Item.objects.filter(Q(available=True) and (Q(private_collection=False) | Q(collections__allowed_patrons=patron))).distinct()
+
         except Patron.DoesNotExist:
+            if query:
+                items = Item.objects.filter(
+                    Q(available=True) &
+                    Q(private_collection=False) &
+                    (Q(name__icontains=query) | Q(categories__name__icontains=query))
+                ).distinct()
+                collections = Collection.objects.filter(Q(is_private=False) & Q(name__icontains=query)).distinct()
+            else:
+                items = Item.objects.filter(
+                    Q(available=True) &
+                    Q(private_collection=False)
+                ).distinct()
+                collections = Collection.objects.filter(Q(is_private=False)).distinct()
+            restricted_collections = Collection.objects.none()
+
+    else:  # guest user
+        if query:
+            items = Item.objects.filter(
+                Q(available=True) &
+                Q(private_collection=False) &
+                (Q(name__icontains=query) | Q(categories__name__icontains=query))
+            ).distinct()
+            collections = Collection.objects.filter(Q(is_private=False) & Q(name__icontains=query)).distinct()
+        else:
+            items = Item.objects.filter(
+                Q(available=True) &
+                Q(private_collection=False)
+            ).distinct()
             collections = Collection.objects.filter(is_private=False)
-            restricted_collections = Collection.objects.none() # do not show restricted
+        restricted_collections = Collection.objects.none()
 
-    if not request.user.is_authenticated:
-        collections = Collection.objects.filter(is_private=False)
-        restricted_collections = Collection.objects.none() # do not show restricted
-        items = Item.objects.filter(Q(available=True) and Q(private_collection=False)).distinct()
-
-    # Get a list of all categories for filtering
-    categories = Item.objects.values_list('category', flat=True).distinct()
+    categories = Category.objects.all()
 
     context = {
         'items': items,
@@ -185,7 +225,6 @@ def browse(request):
     }
 
     return render(request, 'browse.html', context)
-
 
 def add_collection(request):
     if request.method == 'POST':
@@ -264,6 +303,14 @@ def add_item(request):
             # Save the item
             try:
                 item.save()
+                form.save_m2m()
+
+                new_category_name = form.cleaned_data.get('new_category')
+                if new_category_name:
+                    new_cat, created = Category.objects.get_or_create(name=new_category_name)
+                    item.categories.add(new_cat)  # Link it to this item
+                    print(f"Added new category: {new_cat.name}")
+
                 print(f"Item saved with ID: {item.id}")
                 print(f"Item image_url: {item.image_url}")
                 print(f"Item s3_image_key: {item.s3_image_key}")
@@ -287,7 +334,7 @@ def add_item(request):
 def edit_item(request, item_id):
     item = get_object_or_404(Item, pk=item_id)
     if request.method == 'POST':
-        form = ItemForm(request.POST, request.FILES, instance=item)
+        form = ItemForm(request.POST or None, request.FILES or None, instance=item)
         print(f"Form submitted. Files in request: {request.FILES}")
         if form.is_valid():
             print("Form is valid")
@@ -331,6 +378,15 @@ def edit_item(request, item_id):
             # Save the item
             try:
                 item.save()
+                form.save_m2m()
+
+
+                new_category_name = form.cleaned_data.get('new_category')
+                if new_category_name:
+                    new_cat, created = Category.objects.get_or_create(name=new_category_name)
+                    item.categories.add(new_cat)  # Link new category
+                    print(f"Added new category: {new_cat.name}")
+
                 print(f"Item saved with ID: {item.id}")
                 #print(f"Item image_url: {item.image_url}")
                 #print(f"Item s3_image_key: {item.s3_image_key}")
@@ -648,9 +704,12 @@ def promote_user(request):
 @user_passes_test(is_librarian)
 def delete_item(request, item_id):
     item = get_object_or_404(Item, pk=item_id)
-    item.delete()
-    messages.success(request, 'Item deleted successfully.')
-    return redirect('librarian_page')
+    if request.method == 'POST':
+        item.categories.clear()
+        item.delete()
+        messages.success(request, 'Item deleted successfully!')
+        return redirect('librarian_page')
+
 
 def collection_detail(request, collection_id):
     collection = get_object_or_404(Collection, pk=collection_id)
