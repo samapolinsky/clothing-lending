@@ -1,6 +1,5 @@
 from django import forms
-from django.db.models import Q
-from .models import Collection, Item, Patron
+from .models import Collection, Item, Patron, Rating
 
 class CollectionForm(forms.ModelForm):
     class Meta:
@@ -64,7 +63,7 @@ class AddItemToCollectionForm(forms.Form):
             if self.user.user_type == 1:  # Librarian
                 self.fields['collections'].queryset = Collection.objects.all()
             elif self.user.user_type == 2:  # Patron
-                self.fields['collections'].queryset = Collection.objects.filter(Q(created_by=self.user) | Q(allowed_patrons=self.user.patron)) #Q(is_private=False) | Q(allowed_patrons=patron)
+                self.fields['collections'].queryset = Collection.objects.filter(created_by=self.user)
         else:
             self.fields['collections'].queryset = Collection.objects.filter(is_private=False)
 
@@ -116,4 +115,28 @@ class PatronProfileForm(forms.ModelForm):
                 raise forms.ValidationError("Image file too large (> 10MB)")
             return image
 
-# And now i need to add a form to rate items arrghhhhh
+# and now I need to add a rating form argghhh
+class RateItemForm(forms.ModelForm):
+    num_rating = forms.IntegerField(
+        required=True,
+        min_value=1,
+        max_value=5
+    )
+
+    #comment = forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Write a comment on the item'})
+
+    class Meta:
+        model = Rating
+        fields = ['num_rating', 'comment']
+        widgets = {
+            'comment': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Write a comment on the item'}),
+        }
+
+    # now for an init i guess
+    #def __init__(self, *args, **kwargs):
+        #self.user = kwargs.pop('user', None)
+        #self.item = kwargs.pop('item', None)
+        #super(RateItemForm, self).__init__(*args, **kwargs)
+
+
+

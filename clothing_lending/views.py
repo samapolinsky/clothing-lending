@@ -9,7 +9,7 @@ from django.db.models import Q
 from django.utils import timezone
 
 from clothing_lending.models import User, Patron, Librarian, Collection, Item, Lending, Invite, Category, Rating
-from clothing_lending.forms import CollectionForm, ItemForm, PromoteUserForm, AddItemToCollectionForm, PatronProfileForm
+from clothing_lending.forms import CollectionForm, ItemForm, PromoteUserForm, AddItemToCollectionForm, PatronProfileForm, RateItemForm
 from clothing_lending.s3_utils import upload_file_to_s3, get_s3_client, generate_presigned_url, delete_file_from_s3
 
 
@@ -448,6 +448,35 @@ def item_detail(request, item_id):
 
     return render(request, 'item_detail.html', {'item': item, 'form': form, 'ratings': ratings, 'avg': avg, 'canview': can_view})
 
+# stuff to rate an item yippeee
+@user_passes_test(is_patron)
+def rate_item(request, item_id):
+    item = get_object_or_404(Item, pk=item_id)
+    patron = request.user.patron
+    if request.method == 'POST':
+        form = RateItemForm(request.POST or None)
+        print("Form submitted.")
+        if form.is_valid():
+            print("Form is valid")
+            #numrating = form.cleaned_data['numrating']
+            #comment = form.cleaned_data['comment']
+
+            rating = form.save(commit=False) # make a rating!
+            rating.rater = patron
+            rating.item = item
+
+            # Save the rating
+            rating.save()
+            form.save_m2m()
+            messages.success(request, 'Your review has been added!')
+            return redirect('item_detail', item_id=item_id)
+        else:
+            print(f"Form errors: {form.errors}")
+    else:
+        #print("I am loading a form")
+        form = RateItemForm()
+        #print(form)
+    return render(request, 'rate_item.html', {'item': item, 'form': form})
 
 def test_s3_connection(request):
     """

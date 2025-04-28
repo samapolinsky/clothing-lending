@@ -481,7 +481,7 @@
                     <p>No Reviews</p>
                 {% endif %}
                 {% if user.is_authenticated and user.user_type == 2 %}
-                <a href="#" class="btn btn-primary">Review Item</a>
+                <a href="{% url 'rate_item' item.id %}" class="btn btn-primary">Review Item</a>
                 {% endif %}
 
             </div>

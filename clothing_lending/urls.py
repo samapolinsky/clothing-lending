@@ -23,7 +23,7 @@ from .views import (
     add_collection, collection_detail, delete_collection, request_invite,
     
     # Item management
-    add_item, edit_item, item_detail, delete_item, request_borrow,
+    add_item, edit_item, item_detail, rate_item, delete_item, request_borrow,
     
     # Lending management
     manage_lending_request,
@@ -65,6 +65,7 @@ urlpatterns = [
     path('librarian/items/add/', add_item, name='add_item'),
     path('items/<uuid:item_id>/edit/', edit_item, name='edit_item'),
     path('items/<uuid:item_id>/', item_detail, name='item_detail'),
+    path('items/<uuid:item_id>/review/', rate_item, name='rate_item'),
     path('items/<uuid:item_id>/delete/', delete_item, name='delete_item'),
     path('items/<uuid:item_id>/request-borrow/', request_borrow, name='request_borrow'),
     path('items/<uuid:item_id>/presigned-url/', get_presigned_url, name='get_presigned_url'),
