@@ -31,13 +31,14 @@
                             <span class="user-info">
                                 {{ patron.custom_username|default:user.username }}
                             </span>
-                            <a href="{% url 'logout' %}" class="logout-btn">Exit</a>
+                            
                             <a href="{% url 'patron_page' %}" class="btn btn-primary">Patron Dashboard</a>
+                            <a href="{% url 'logout' %}" class="logout-btn">Exit</a>
                         {% endwith %}
                     {% elif user.user_type == 1 %}
                         <span class="user-info">{{ user.username }}</span>
-                        <a href="{% url 'logout' %}" class="logout-btn">Exit</a>
                         <a href="{% url 'librarian_page' %}" class="btn btn-primary">Librarian Dashboard</a>
+                        <a href="{% url 'logout' %}" class="logout-btn">Exit</a>
                     {% endif %}
                 {% else %}
                     <a href="{% provider_login_url 'google' %}" class="login-btn">Sign In</a>
