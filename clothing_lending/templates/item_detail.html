@@ -487,7 +487,7 @@
                         </form>
                     </div>
                     {% else %}
-                    <a href="{% url 'browse' %}" class="btn btn-secondary">Back to Browse</a>
+                    <a href="{% url 'browse' %}" class="btn btn-primary">Back to Browse</a>
                     {% if user.is_authenticated and user.user_type == 2 and item.available %}
                     <form method="POST" action="/lending/items/{{ item.id }}/request-borrow/">
                         {% csrf_token %}

@@ -242,7 +242,11 @@ def add_collection(request):
     else:
         form = CollectionForm()
 
-    return render(request, 'librarian/add_collection.html', {'form': form})
+    return render(request, 'librarian/add_collection.html', {
+        'form': form,
+        'librarians': Librarian.objects.all(),
+        'patron': request.user.patron,
+        })
 
 def edit_collection(request, collection_id):
     user = request.user

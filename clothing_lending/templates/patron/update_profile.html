@@ -92,15 +92,27 @@
         }
         
         .btn-secondary {
-            color: #666;
+            /* color: #666; */
+            background: none;
+            color: darkgrey;
+            border: 1px solid darkgrey;
+            padding: 0.5rem 1.5rem;
+            text-decoration: none;
+            font-size: 0.9rem;
+            letter-spacing: 0.05em;
+            transition: all 0.3s ease;
         }
         
         .btn-primary:hover {
-            background: #333;
+            /* background: #333; */
+            background: white;
+            color: #111;
         }
         
         .btn-secondary:hover {
-            border-color: #111;
+            /* border-color: #111;
+            color: #111; */
+            background: white;
             color: #111;
         }
         
@@ -121,7 +133,9 @@
         }
         
         .btn-danger:hover {
-            background: #c82333;
+            /* background: #c82333; */
+            background: white;
+            color: #dc3545;
         }
         
         .btn-sm {
@@ -304,6 +318,27 @@
             grid-template-columns: repeat(2, 1fr);
             gap: 1.5rem;
         }
+
+        .user-info {
+            color: #666;
+            /* margin-right: 2rem; */
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .profile-img {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 0;
+        }
     </style>
 </head>
 <body>
@@ -312,6 +347,14 @@
             <h1><a href="{% url 'browse' %}" style="color: white; text-decoration: none;">AIRDROBE DASHBOARD</a></h1>
             <div class="nav-actions">
                 {% if user.is_authenticated %}
+                    <span class="user-info">
+                        {{ patron.custom_username|default:user.username }}
+                    </span>
+                    {% if patron.profile_picture %}
+                        <img src="{{ patron.profile_picture }}" alt="Profile Picture" class="profile-img">
+                    {% else %}
+                        <img src="{% static 'patron/default_pfp.png' %}" alt="Default Profile Picture" class="profile-img">
+                    {% endif %}
                     <a href="{% url 'patron_page' %}" class="btn btn-secondary">Back to Dashboard</a>
                     <a href="{% url 'logout' %}" class="btn btn-secondary">Exit</a>
                 {% endif %}
@@ -356,6 +399,9 @@
         {% if patron.profile_picture %}
             <div class="mt-3">
                 <div class="card">
+                    <div class="card-header">
+                        <h1>Current Profile Picture</h1>
+                    </div>
                     <div class="card-body">
                         <img src="{{ patron.profile_picture }}" alt="Profile Picture" class="rounded-circle" style="width:250px; height:250px;">
                         <br>
