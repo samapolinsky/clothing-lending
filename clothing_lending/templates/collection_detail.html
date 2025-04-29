@@ -438,16 +438,34 @@
             <p class="collection-description">{{ collection.description }}</p>
             {% if collection.is_private %}
                 <div class="allowed-patrons-section">
-                    <h4>Allowed Patrons</h4>
-                    {% if collection.allowed_patrons.all %}
-                        <ul class="allowed-patrons-list">
-                            {% for patron in collection.allowed_patrons.all %}
-                                <li>{{ patron.user.username }}{% if patron.custom_username %} ({{ patron.custom_username }}){% endif %}</li>
-                            {% endfor %}
-                        </ul>
-                    {% else %}
-                        <p>No patrons have been granted access yet.</p>
-                    {% endif %}
+                    <h4>Users With Access</h4>
+                    <div class="access-lists">
+                        <div class="librarians-list">
+                            <h5>Librarians</h5>
+                            {% if librarians %}
+                                <ul class="users-list">
+                                    {% for librarian in librarians %}
+                                        <li>{{ librarian.user.username }} (Librarian)</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p>No librarians in the system.</p>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="patrons-list">
+                            <h5>Allowed Patrons</h5>
+                            {% if collection.allowed_patrons.all %}
+                                <ul class="users-list">
+                                    {% for patron in collection.allowed_patrons.all %}
+                                        <li>{{ patron.user.username }}{% if patron.custom_username %} ({{ patron.custom_username }}){% endif %}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p>No patrons have been granted access yet.</p>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
             {% endif %}
             <div class="action-buttons">
