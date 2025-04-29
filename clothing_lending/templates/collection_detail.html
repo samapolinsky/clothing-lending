@@ -449,47 +449,16 @@
                 </form>
                 {% endif %}
             </div>
-            <div class="card-body">
-                <form class="collection-search-bar" onsubmit="return false;">
-                    <input type="text" id="searchInput" name="q" placeholder="Search items in collection..." value="{{ request.GET.q }}" class="form-control search-input">
-                </form>
-                {% if user.is_authenticated %}
-                <br>
-                <div class="form-section">
-                    <h5>Add Items</h5>
-    
-                    {% if form.non_field_errors %}
-                        <div class="error-box">
-                            {% for error in form.non_field_errors %}
-                                <p>{{ error }}</p>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-    
-                    <form method="POST">
-                        {% csrf_token %}
-                        <div class="form-group">
-                            <label for="{{ form.items.id_for_label }}">Items</label>
-                            {{ form.items }}
-                            {% if form.items.errors %}
-                            <div class="field-error">
-                                {% for error in form.items.errors %}
-                                <small>{{ error }}</small>
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-                        </div>
-    
-                        <button type="submit" name="add_to_collection" class="btn btn-primary">Add to Collection</button>
-                    </form>
-                </div>
-                {% endif %}
-            </div>
         </div>
 
 
         <div class="items-area">
-            <h2 class="section-heading">Items in {{ collection.name }}</h2>
+            <h2 class="section-heading" style="text-align: center;">Items in {{ collection.name }}</h2>
+            <div class="card-body">
+                <form class="collection-search-bar" onsubmit="return false;">
+                    <input type="text" id="searchInput" name="q" placeholder="Search items in collection..." value="{{ request.GET.q }}" class="form-control search-input">
+                </form>
+            </div>
         <div class="items-grid">
             {% for item in items %}
             <div class="item-card" data-item-id="{{ item.id }}">
@@ -543,6 +512,39 @@
                 <p style="color: #666; font-size: 1.1rem;">No items in this collection yet.</p>
             </div>
             {% endfor %}
+            {% if user.is_authenticated %}
+            <div class="item-card">
+                <div class="card-body">
+                <div class="form-section">
+                    <h5>Add Items</h5>
+    
+                    {% if form.non_field_errors %}
+                        <div class="error-box">
+                            {% for error in form.non_field_errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+    
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            {{ form.items }}
+                            {% if form.items.errors %}
+                            <div class="field-error">
+                                {% for error in form.items.errors %}
+                                <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+    
+                        <button type="submit" name="add_to_collection" class="btn btn-primary">Add to Collection</button>
+                    </form>
+                </div>
+                </div>
+            </div>
+            {% endif %}
         </div>
         </div>
         {% else %}

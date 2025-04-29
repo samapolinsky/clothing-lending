@@ -1,5 +1,6 @@
 from django import forms
 from .models import Collection, Item, Patron, Rating
+from django.db.models import Q
 
 class CollectionForm(forms.ModelForm):
     class Meta:
@@ -101,7 +102,7 @@ class AddItemToCollectionFromCollectionForm(forms.Form):
         if self.collection.is_private:
             self.fields['items'].queryset = Item.objects.filter(collections__isnull=True)
         else:
-            self.fields['items'].queryset = Item.objects.filter(private_collection=False)
+            self.fields['items'].queryset = Item.objects.filter(Q(private_collection=False) & ~Q(collections=self.collection))
 
 
     items = forms.ModelMultipleChoiceField(
