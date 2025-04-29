@@ -809,7 +809,23 @@ def collection_detail(request, collection_id):
             can_view = False
         else:
             can_view = True
-    #print(can_view)
+    
+    # Get all librarians for display in private collections
+    librarians = Librarian.objects.all()
+
+    # Now let's have some other fun conditions
+    can_add = False
+    can_edit = False
+    if request.user.is_authenticated:
+        if request.user.user_type == 1:
+            can_add = True
+            can_edit = True
+        else:
+            if collection.created_by == request.user:
+                can_add = True
+                can_edit = True
+    
+        
 
     # Now let's have some other fun conditions
     can_add = False
@@ -826,7 +842,6 @@ def collection_detail(request, collection_id):
         
 
     if request.method == 'POST' and 'add_to_collection' in request.POST:
-        # form = AddItemToCollectionForm(request.POST, user=request.user if request.user.is_authenticated else None)
         form = AddItemToCollectionFromCollectionForm(request.POST, user=request.user if request.user.is_authenticated else None, collection=collection)
 
         if form.is_valid():
@@ -836,15 +851,18 @@ def collection_detail(request, collection_id):
             messages.success(request, 'Selected item(s) added to collection successfully.')
             return redirect('collection_detail', collection_id=collection_id)
     else:
-        # if request.user.is_authenticated:
-        # form = AddItemToCollectionForm(user=request.user)
         form = AddItemToCollectionFromCollectionForm(
             user=request.user if request.user.is_authenticated else None,
             collection=collection
         )
 
-
-    return render(request, 'collection_detail.html', {'collection': collection, 'items': items, 'canview': can_view, "canadd": can_add, "canedit": can_edit, 'form':form})
+    return render(request, 'collection_detail.html', {
+        'collection': collection, 
+        'items': items, 
+        'canview': can_view, 
+        "canadd": can_add, "canedit": can_edit, 'form': form,
+        'librarians': librarians
+    })
 
 
 @user_passes_test(is_librarian)
@@ -1169,6 +1187,25 @@ def remove_item_from_collection(request, collection_id, item_id):
         messages.success(request, f'"{item.name}" has been removed from the collection.')
     else:
         messages.warning(request, f'"{item.name}" is not in this collection.')
+    
+    return redirect('collection_detail', collection_id=collection_id)
+
+@user_passes_test(is_librarian)
+def remove_patron_access(request, collection_id, patron_id):
+    collection = get_object_or_404(Collection, pk=collection_id)
+    patron = get_object_or_404(Patron, pk=patron_id)
+    
+    # Check if the user has permission to modify this collection
+    if collection.created_by != request.user and request.user.user_type != 1:
+        messages.error(request, "You don't have permission to modify this collection.")
+        return redirect('collection_detail', collection_id=collection_id)
+    
+    # Remove the patron from the allowed_patrons list
+    if patron in collection.allowed_patrons.all():
+        collection.allowed_patrons.remove(patron)
+        messages.success(request, f'Access for {patron.user.username} has been removed.')
+    else:
+        messages.warning(request, f'{patron.user.username} does not have access to this collection.')
     
     return redirect('collection_detail', collection_id=collection_id)
 

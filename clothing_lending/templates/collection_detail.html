@@ -123,6 +123,14 @@
             letter-spacing: -0.02em;
             font-weight: 700;
         }
+
+        .collection-creator {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #444;
+            margin-bottom: 2rem;
+        }
         
         .collection-description {
             font-size: 1.1rem;
@@ -435,7 +443,50 @@
 
         <div class="card">
             <h2 class="collection-title">{{ collection.name }}</h2>
+            <h3 class="collection-creator">Created by: {{collection.created_by}}</h3>
             <p class="collection-description">{{ collection.description }}</p>
+            {% if collection.is_private %}
+                <div class="allowed-patrons-section">
+                    <h4>Users With Access</h4>
+                    <div class="access-lists">
+                        <div class="librarians-list">
+                            <h5>Librarians</h5>
+                            {% if librarians %}
+                                <ul class="users-list">
+                                    {% for librarian in librarians %}
+                                        <li>{{ librarian.user.username }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p>No librarians in the system.</p>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="patrons-list">
+                            <h5>Allowed Patrons</h5>
+                            {% if collection.allowed_patrons.all %}
+                                <ul class="users-list">
+                                    {% for patron in collection.allowed_patrons.all %}
+                                        <li>
+                                            {{ patron.user.username }}{% if patron.custom_username %} ({{ patron.custom_username }}){% endif %}
+                                            {% if user.is_authenticated and user.user_type == 1 %}
+                                                <form method="POST" action="{% url 'remove_patron_access' collection.id patron.id %}" class="d-inline" style="float: right;">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Remove access for this patron?');">
+                                                        <i class="fas fa-times"></i> Remove
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p>No patrons have been granted access yet.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
             <div class="action-buttons">
                 {% if user.is_authenticated and user.user_type == 1 %}
                 <a href="{% url 'librarian_page' %}" class="btn btn-secondary">Back to Dashboard</a>
@@ -569,9 +620,63 @@
             100% { transform: rotate(360deg); }
         }
 
+        .allowed-patrons-section {
+            margin: 1rem 0;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .access-lists {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+
+        .librarians-list, .patrons-list {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .users-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .users-list li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-danger.btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: white;
+            border-radius: 0.2rem;
+        }
+
+        .btn-danger.btn-sm:hover {
+            background-color: #c82333;
+            border-color: #bd2130;
+        }
+
+        .users-list li:last-child {
+            border-bottom: none;
+        }
+
         @media (max-width: 768px) {
             .items-area {
                 width: 100%;
+            }
+            
+            .access-lists {
+                flex-direction: column;
+                gap: 1rem;
             }
         }
     </style>
