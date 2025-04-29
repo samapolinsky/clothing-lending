@@ -1132,6 +1132,25 @@ def remove_item_from_collection(request, collection_id, item_id):
     
     return redirect('collection_detail', collection_id=collection_id)
 
+@user_passes_test(is_librarian)
+def remove_patron_access(request, collection_id, patron_id):
+    collection = get_object_or_404(Collection, pk=collection_id)
+    patron = get_object_or_404(Patron, pk=patron_id)
+    
+    # Check if the user has permission to modify this collection
+    if collection.created_by != request.user and request.user.user_type != 1:
+        messages.error(request, "You don't have permission to modify this collection.")
+        return redirect('collection_detail', collection_id=collection_id)
+    
+    # Remove the patron from the allowed_patrons list
+    if patron in collection.allowed_patrons.all():
+        collection.allowed_patrons.remove(patron)
+        messages.success(request, f'Access for {patron.user.username} has been removed.')
+    else:
+        messages.warning(request, f'{patron.user.username} does not have access to this collection.')
+    
+    return redirect('collection_detail', collection_id=collection_id)
+
 # Add a simple test view that always works
 def test_view(request):
     return HttpResponse("This is a test view. If you see this, URL routing is working.")

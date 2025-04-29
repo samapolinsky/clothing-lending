@@ -467,7 +467,17 @@
                             {% if collection.allowed_patrons.all %}
                                 <ul class="users-list">
                                     {% for patron in collection.allowed_patrons.all %}
-                                        <li>{{ patron.user.username }}{% if patron.custom_username %} ({{ patron.custom_username }}){% endif %}</li>
+                                        <li>
+                                            {{ patron.user.username }}{% if patron.custom_username %} ({{ patron.custom_username }}){% endif %}
+                                            {% if user.is_authenticated and user.user_type == 1 %}
+                                                <form method="POST" action="{% url 'remove_patron_access' collection.id patron.id %}" class="d-inline" style="float: right;">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Remove access for this patron?');">
+                                                        <i class="fas fa-times"></i> Remove
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                        </li>
                                     {% endfor %}
                                 </ul>
                             {% else %}
@@ -633,6 +643,23 @@
         .users-list li {
             padding: 0.5rem 0;
             border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-danger.btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: white;
+            border-radius: 0.2rem;
+        }
+
+        .btn-danger.btn-sm:hover {
+            background-color: #c82333;
+            border-color: #bd2130;
         }
 
         .users-list li:last-child {
