@@ -1088,7 +1088,8 @@ def remove_item_from_collection(request, collection_id, item_id):
     item = get_object_or_404(Item, pk=item_id)
     
     # Check if the user has permission to modify this collection
-    if collection.created_by != request.user:
+    # Allow both the collection creator and any librarian
+    if collection.created_by != request.user and request.user.user_type != 1:
         messages.error(request, "You don't have permission to modify this collection.")
         return redirect('collection_detail', collection_id=collection_id)
     
