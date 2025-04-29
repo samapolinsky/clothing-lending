@@ -347,6 +347,53 @@
             color: #666;
             border-radius: 4px;
         }
+
+        .form-section {
+            margin-top: 3rem;
+            border-top: 1px solid #eee;
+            padding-top: 2rem;
+        }
+
+        .form-section h5 {
+            font-family: 'Space Grotesk', sans-serif;
+            margin-bottom: 1.5rem;
+            font-size: 1.2rem;
+            letter-spacing: -0.02em;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-control {
+            display: block;
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .error-box {
+            background-color: #ffe6e6;
+            color: #a94442;
+            border: 1px solid #f5c2c7;
+            padding: 0.75rem 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+
+        .field-error p {
+            margin: 0;
+            font-size: 0.875rem;
+            color: #d9534f;
+        }
     </style>
 </head>
 <body>
@@ -402,13 +449,43 @@
                 </form>
                 {% endif %}
             </div>
-        </div>
-
             <div class="card-body">
                 <form class="collection-search-bar" onsubmit="return false;">
                     <input type="text" id="searchInput" name="q" placeholder="Search items in collection..." value="{{ request.GET.q }}" class="form-control search-input">
                 </form>
+                {% if user.is_authenticated %}
+                <br>
+                <div class="form-section">
+                    <h5>Add Items</h5>
+    
+                    {% if form.non_field_errors %}
+                        <div class="error-box">
+                            {% for error in form.non_field_errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+    
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="{{ form.items.id_for_label }}">Items</label>
+                            {{ form.items }}
+                            {% if form.items.errors %}
+                            <div class="field-error">
+                                {% for error in form.items.errors %}
+                                <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+    
+                        <button type="submit" name="add_to_collection" class="btn btn-primary">Add to Collection</button>
+                    </form>
+                </div>
+                {% endif %}
             </div>
+        </div>
 
 
         <div class="items-area">

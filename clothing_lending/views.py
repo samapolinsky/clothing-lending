@@ -9,7 +9,7 @@ from django.db.models import Q
 from django.utils import timezone
 
 from clothing_lending.models import User, Patron, Librarian, Collection, Item, Lending, Invite, Category, Rating
-from clothing_lending.forms import CollectionForm, ItemForm, PromoteUserForm, AddItemToCollectionForm, PatronProfileForm, RateItemForm
+from clothing_lending.forms import CollectionForm, ItemForm, PromoteUserForm, AddItemToCollectionForm, AddItemToCollectionFromCollectionForm, PatronProfileForm, RateItemForm
 from clothing_lending.s3_utils import upload_file_to_s3, get_s3_client, generate_presigned_url, delete_file_from_s3
 
 
@@ -780,7 +780,27 @@ def collection_detail(request, collection_id):
         else:
             can_view = True
     #print(can_view)
-    return render(request, 'collection_detail.html', {'collection': collection, 'items': items, 'canview': can_view})
+
+    if request.method == 'POST' and 'add_to_collection' in request.POST:
+        # form = AddItemToCollectionForm(request.POST, user=request.user if request.user.is_authenticated else None)
+        form = AddItemToCollectionFromCollectionForm(request.POST, user=request.user if request.user.is_authenticated else None, collection=collection)
+
+        if form.is_valid():
+            items = form.cleaned_data['items']
+            for item in items:
+                item.collections.add(collection)
+            messages.success(request, 'Selected item(s) added to collection successfully.')
+            return redirect('collection_detail', collection_id=collection_id)
+    else:
+        # if request.user.is_authenticated:
+        # form = AddItemToCollectionForm(user=request.user)
+        form = AddItemToCollectionFromCollectionForm(
+            user=request.user if request.user.is_authenticated else None,
+            collection=collection
+        )
+
+
+    return render(request, 'collection_detail.html', {'collection': collection, 'items': items, 'canview': can_view, 'form':form})
 
 
 @user_passes_test(is_librarian)
