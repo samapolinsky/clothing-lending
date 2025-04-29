@@ -882,6 +882,7 @@ def collection_detail(request, collection_id):
         'canview': can_view,
         'canadd': can_add,
         'canedit': can_edit,
+        'form': form,
         'librarians': librarians,
         'patron': patron,
     }

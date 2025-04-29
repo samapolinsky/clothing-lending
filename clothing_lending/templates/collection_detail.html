@@ -75,16 +75,39 @@
         }
         
         .btn-secondary {
-            color: #666;
+            /* color: #666; */
+            background: none;
+            color: darkgrey;
+            border: 1px solid darkgrey;
+            padding: 0.5rem 1.5rem;
+            text-decoration: none;
+            font-size: 0.9rem;
+            letter-spacing: 0.05em;
+            transition: all 0.3s ease;
         }
         
         .btn-primary:hover {
-            background: #333;
+            /* background: #333; */
+            background: white;
+            color: #111;
         }
         
         .btn-secondary:hover {
-            border-color: #111;
+            /* border-color: #111;
+            color: #111; */
+            background: white;
             color: #111;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+            border-color: #ffc107;
+        }
+
+        .btn-warning:hover {
+            background: white;
+            color: #e0a800;
         }
         
         .btn-danger {
@@ -94,7 +117,9 @@
         }
         
         .btn-danger:hover {
-            background: #c82333;
+            /* background: #c82333; */
+            color: #dc3545;
+            background: white;
         }
 
         .alert {
@@ -488,7 +513,7 @@
         <div class="card">
             <h2 class="collection-title">{{ collection.name }}</h2>
             <h3 class="collection-creator">Created by: {{collection.created_by}}</h3>
-            <p class="collection-description">{{ collection.description }}</p>
+            <p class="collection-description"><b>Description:</b><br>{{ collection.description }}</p>
             {% if collection.is_private %}
                 <div class="allowed-patrons-section">
                     <h4>Users With Access</h4>
@@ -533,9 +558,10 @@
             {% endif %}
             <div class="action-buttons">
                 {% if user.is_authenticated and user.user_type == 1 %}
-                <a href="{% url 'librarian_page' %}" class="btn btn-secondary">Back to Dashboard</a>
+                <a href="{% url 'browse' %}" class="btn btn-primary">Back to Browse</a>
+                <a href="{% url 'librarian_page' %}" class="btn btn-primary">Back to Dashboard</a>
                 {% else %}
-                <a href="{% url 'browse' %}" class="btn btn-secondary">Back to Browse</a>
+                <a href="{% url 'browse' %}" class="btn btn-primary">Back to Browse</a>
                 {% endif %}
                 {% if canedit %}
                 <a href="{% url 'edit_collection' collection.id %}" class="btn btn-warning">Edit Collection</a>
