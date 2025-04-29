@@ -247,15 +247,22 @@ def add_collection(request):
 def edit_collection(request, collection_id):
     user = request.user
     orig_collection = get_object_or_404(Collection, pk=collection_id)
+    privacy_status = orig_collection.is_private
     collection = get_object_or_404(Collection, pk=collection_id)
     if request.method == 'POST':
         form = CollectionForm(request.POST, instance=orig_collection)
         if form.is_valid():
+            #print(form)
+            allowed_patrons = form.cleaned_data.get('allowed_patrons')
+            print(allowed_patrons)
             collection = form.save(commit=False)
-            collection.is_private = orig_collection.is_private
+            collection.is_private = privacy_status
+            collection.allowed_patrons.set(allowed_patrons)
             collection.created_by = orig_collection.created_by
             collection.created_at = orig_collection.created_at
             collection.save()
+            print(collection.is_private)
+            print(collection.allowed_patrons)
             form.save_m2m()
             messages.success(request, 'Collection updated successfully!')
             if request.user.user_type == 1:
