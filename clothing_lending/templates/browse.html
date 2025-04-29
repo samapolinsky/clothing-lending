@@ -40,12 +40,12 @@
                                 <img src="{% static 'patron/default_pfp.png' %}" alt="Default Profile Picture" class="profile-img">
                             {% endif %}
                             
-                            <a href="{% url 'patron_page' %}" class="btn btn-primary">Patron Dashboard</a>
+                            <a href="{% url 'patron_page' %}" class="btn btn-primary">Dashboard</a>
                             <a href="{% url 'logout' %}" class="logout-btn">Exit</a>
                         {% endwith %}
                     {% elif user.user_type == 1 %}
                         <span class="user-info">{{ user.username }}</span>
-                        <a href="{% url 'librarian_page' %}" class="btn btn-primary">Librarian Dashboard</a>
+                        <a href="{% url 'librarian_page' %}" class="btn btn-primary">Dashboard</a>
                         <a href="{% url 'logout' %}" class="logout-btn">Exit</a>
                     {% endif %}
                 {% else %}

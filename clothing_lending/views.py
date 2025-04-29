@@ -449,7 +449,12 @@ def item_detail(request, item_id):
         for rating in ratings:
             sum = sum + rating.num_rating
         avg = round(sum / ratings.count(), 1)
-        
+    
+    # Get patron for the current user if authenticated
+    patron = None
+    if request.user.is_authenticated and request.user.user_type == 2:
+        patron, created = Patron.objects.get_or_create(user=request.user)
+    
     if request.user.is_authenticated:
         can_view = user_can_view_item(request.user, item)
     else:
@@ -476,7 +481,7 @@ def item_detail(request, item_id):
             item=item
         )
 
-    return render(request, 'item_detail.html', {'item': item, 'form': form, 'ratings': ratings, 'avg': avg, 'canview': can_view})
+    return render(request, 'item_detail.html', {'item': item, 'form': form, 'ratings': ratings, 'avg': avg, 'canview': can_view, 'patron': patron})
 
 # stuff to rate an item yippeee
 @user_passes_test(is_patron)
