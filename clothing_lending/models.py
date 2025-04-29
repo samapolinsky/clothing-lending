@@ -107,6 +107,7 @@ class Lending(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='PENDING')
     approved_date = models.DateTimeField(null=True, blank=True)
     due_date = models.DateTimeField(null=True, blank=True)
+    return_requested = models.BooleanField(default=False)
     return_date = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):

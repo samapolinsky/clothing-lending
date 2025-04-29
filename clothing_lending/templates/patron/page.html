@@ -494,12 +494,15 @@
                                         <td>
                                             <a href="{% url 'item_detail' lending.item.id %}" class="title-link">{{ lending.item.name }}</a>
                                         </td>
-                                        <td>{{ lending.item.category }}</td>
+                                        <td>{% for category in lending.item.categories.all %}
+                                            {{ category.name }}{% if not forloop.last %}, {% endif %}
+                                            {% endfor %}
+                                        </td>
                                         <td>{{ lending.approved_date|date:"M d, Y" }}</td>
                                         <td>{{ lending.due_date|date:"M d, Y" }}</td>
                                         <td>
                                             {% if not lending.return_requested %}
-                                                <form method="POST" action="#"> <!--<td>{{ lending.approved_date|date:"M d, Y" }}</td>-->
+                                                <form method="POST" action="{% url 'request_return' lending.id %}"> <!--<td>{{ lending.approved_date|date:"M d, Y" }}</td>-->
                                                     {% csrf_token %}
                                                     <button type="submit" class="btn btn-primary btn-sm">Request Return</button>
                                                 </form>

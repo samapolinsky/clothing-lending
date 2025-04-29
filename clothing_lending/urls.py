@@ -23,7 +23,7 @@ from .views import (
     add_collection, collection_detail, edit_collection, delete_collection, request_invite, remove_item_from_collection, remove_patron_access,
     
     # Item management
-    add_item, edit_item, item_detail, rate_item, edit_rating, delete_rating, delete_item, request_borrow,
+    add_item, edit_item, item_detail, rate_item, edit_rating, delete_rating, delete_item, request_borrow, request_return,
     
     # Lending management
     manage_lending_request,
@@ -77,6 +77,7 @@ urlpatterns = [
     
     # Lending management routes
     path('lending/<int:lending_id>/manage/', manage_lending_request, name='manage_lending_request'),
+    path('lending/<int:lending_id>/request-return/', request_return, name='request_return'),
     path('lending/<int:invite_id>/manage-invite/', manage_invite, name='manage_invite'),
     
     # Librarian management routes

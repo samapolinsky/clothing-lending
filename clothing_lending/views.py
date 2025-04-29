@@ -1215,6 +1215,21 @@ def request_invite(request, collection_id):
 
     return redirect(f'/lending/browse/')
 
+@user_passes_test(is_patron)
+def request_return(request, lending_id):
+    lending = get_object_or_404(Lending, pk=lending_id)
+    patron = get_object_or_404(Patron, user=request.user)
+
+    # check if user borrowed item and lending is approved
+    if lending.borrower == patron and lending.status == "APPROVED":
+        lending.return_requested = True
+        lending.save()
+        messages.success(request, "Return requested successfully.")
+        return redirect('/lending/patron/page/')
+    else:
+        messages.error(request, "You don't have permission to return this item.")
+        return redirect('/lending/patron/page/')
+
 @user_passes_test(is_librarian)
 def manage_lending_request(request, lending_id):
     lending = get_object_or_404(Lending, pk=lending_id)
