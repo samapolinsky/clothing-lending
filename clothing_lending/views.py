@@ -589,6 +589,20 @@ def edit_rating(request, item_id):
         #print(form)
     return render(request, 'edit_rating.html', {'item': item, 'form': form})
 
+# now to delete ratings
+@user_passes_test(is_patron)
+def delete_rating(request, item_id):
+    item = get_object_or_404(Item, pk=item_id)
+    patron = request.user.patron
+    if not Rating.objects.filter(Q(item=item) & Q(rater=patron)).exists():
+        messages.warning(request, 'You cannot delete a review you have not posted.')
+        return redirect('item_detail', item_id=item_id)
+    rating = get_object_or_404(Rating, Q(item=item) & Q(rater=patron))
+    if request.method == 'POST':
+        rating.delete()
+        messages.success(request, 'Review deleted successfully!')
+        return redirect('item_detail', item_id=item_id)
+
 def test_s3_connection(request):
     """
     A debug view to test S3 connection and image access.
