@@ -244,6 +244,27 @@ def add_collection(request):
 
     return render(request, 'librarian/add_collection.html', {'form': form})
 
+def edit_collection(request, collection_id):
+    user = request.user
+    orig_collection = get_object_or_404(Collection, pk=collection_id)
+    collection = get_object_or_404(Collection, pk=collection_id)
+    if request.method == 'POST':
+        form = CollectionForm(request.POST, instance=orig_collection)
+        if form.is_valid():
+            collection = form.save(commit=False)
+            collection.created_by = request.user
+            collection.save()
+            form.save_m2m()
+            messages.success(request, 'Collection updated successfully!')
+            if request.user.user_type == 1:
+                return redirect('librarian_page')
+            elif request.user.user_type == 2:
+                return redirect('patron_page')
+    else:
+        form = CollectionForm(instance=orig_collection)
+
+    return render(request, 'edit_collection.html', {'form': form, 'user': user})
+
 
 def user_can_view_collection(user, collection):
     if not collection.is_private:

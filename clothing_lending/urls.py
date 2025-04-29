@@ -20,7 +20,7 @@ from .views import (
     patron_page, update_patron_profile, remove_profile_picture,
     
     # Collection management
-    add_collection, collection_detail, delete_collection, request_invite, remove_item_from_collection,
+    add_collection, collection_detail, edit_collection, delete_collection, request_invite, remove_item_from_collection,
     
     # Item management
     add_item, edit_item, item_detail, rate_item, delete_item, request_borrow,
@@ -57,6 +57,7 @@ urlpatterns = [
     # Collection management routes
     path('collections/<uuid:collection_id>/', collection_detail, name='collection_detail'),
     path('collections/<uuid:collection_id>/delete/', delete_collection, name='delete_collection'),
+    path('collections/<uuid:collection_id>/edit/', edit_collection, name='edit_collection'),
     path('collections/<uuid:collection_id>/request-invite/', request_invite, name='request_invite'),
     path('collections/<uuid:collection_id>/remove-item/<uuid:item_id>/', remove_item_from_collection, name='remove_item_from_collection'),
     path('librarian/collections/add/', add_collection, name='add_collection'),
