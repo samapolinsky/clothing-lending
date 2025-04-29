@@ -759,6 +759,10 @@ def promote_user(request):
 def delete_item(request, item_id):
     item = get_object_or_404(Item, pk=item_id)
     if request.method == 'POST':
+        # Delete item picture from S3 if it exists
+        if item.s3_image_key:
+            from clothing_lending.s3_utils import delete_file_from_s3
+            delete_file_from_s3(item.s3_image_key)
         item.categories.clear()
         item.delete()
         messages.success(request, 'Item deleted successfully!')
