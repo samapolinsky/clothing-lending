@@ -146,15 +146,27 @@
         }
         
         .btn-secondary {
-            color: #666;
+            /* color: #666; */
+            background: none;
+            color: darkgrey;
+            border: 1px solid darkgrey;
+            padding: 0.5rem 1.5rem;
+            text-decoration: none;
+            font-size: 0.9rem;
+            letter-spacing: 0.05em;
+            transition: all 0.3s ease;
         }
         
         .btn-primary:hover {
-            background: #333;
+            /* background: #333; */
+            background: white;
+            color: #111;
         }
         
         .btn-secondary:hover {
-            border-color: #111;
+            /* border-color: #111;
+            color: #111; */
+            background: white;
             color: #111;
         }
         
@@ -184,10 +196,23 @@
             grid-template-columns: repeat(2, 1fr);
             gap: 1.5rem;
         }
+
+        .form-group {
+            flex: 1;
+        }
         
         .nav-actions {
             display: flex;
             gap: 1rem;
+            align-items: center;
+        }
+
+        .user-info {
+            color: #666;
+            /* margin-right: 2rem; */
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
     </style>
 </head>
@@ -196,6 +221,9 @@
         <div class="header-content">
             <h1><a href="{% url 'browse' %}" style="color: white; text-decoration: none;">AIRDROBE</a></h1>
             <div class="nav-actions">
+                <span class="user-info">
+                    {{ patron.custom_username|default:user.username }}
+                </span>
                 <a href="{% url 'librarian_page' %}" class="btn btn-secondary">Dashboard</a>
                 <a href="{% url 'browse' %}" class="btn btn-secondary">Browse Items</a>
                 <a href="{% url 'logout' %}" class="btn btn-secondary">Exit</a>
@@ -301,7 +329,7 @@
                     
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary">Create Item</button>
-                        <a href="{% url 'librarian_page' %}" class="btn btn-secondary">Back to Dashboard</a>
+                        <a href="{% url 'librarian_page' %}" class="btn btn-primary">Back to Dashboard</a>
                     </div>
                 </form>
             </div>

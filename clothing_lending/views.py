@@ -242,10 +242,14 @@ def add_collection(request):
     else:
         form = CollectionForm()
 
+    patron = None
+    if request.user.is_authenticated and request.user.user_type == 2:
+        patron, created = Patron.objects.get_or_create(user=request.user)
+
     return render(request, 'librarian/add_collection.html', {
         'form': form,
         'librarians': Librarian.objects.all(),
-        'patron': request.user.patron,
+        'patron': patron,
         })
 
 def edit_collection(request, collection_id):
