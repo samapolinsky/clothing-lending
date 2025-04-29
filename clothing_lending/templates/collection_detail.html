@@ -123,6 +123,14 @@
             letter-spacing: -0.02em;
             font-weight: 700;
         }
+
+        .collection-creator {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #444;
+            margin-bottom: 2rem;
+        }
         
         .collection-description {
             font-size: 1.1rem;
@@ -435,6 +443,7 @@
 
         <div class="card">
             <h2 class="collection-title">{{ collection.name }}</h2>
+            <h3 class="collection-creator">Created by: {{collection.created_by}}</h3>
             <p class="collection-description">{{ collection.description }}</p>
             {% if collection.is_private %}
                 <div class="allowed-patrons-section">
