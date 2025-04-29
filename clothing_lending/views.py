@@ -1082,19 +1082,21 @@ def manage_invite(request, invite_id):
     invite.save()
     return redirect('/lending/librarian/page/')
 
-@user_passes_test(is_librarian)
+@login_required
 def remove_item_from_collection(request, collection_id, item_id):
     collection = get_object_or_404(Collection, pk=collection_id)
     item = get_object_or_404(Item, pk=item_id)
     
-    # Check if the librarian has permission to modify this collection
+    # Check if the user has permission to modify this collection
     if collection.created_by != request.user:
         messages.error(request, "You don't have permission to modify this collection.")
         return redirect('collection_detail', collection_id=collection_id)
     
     # Remove the item from the collection
-    if item in collection.items.all():
-        collection.items.remove(item)
+    # Use item.collections.remove() instead of collection.items.remove()
+    # This ensures the signal receives an Item instance
+    if collection in item.collections.all():
+        item.collections.remove(collection)
         messages.success(request, f'"{item.name}" has been removed from the collection.')
     else:
         messages.warning(request, f'"{item.name}" is not in this collection.')

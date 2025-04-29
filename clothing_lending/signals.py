@@ -48,7 +48,16 @@ def handle_user_type_change(sender, instance, **kwargs):
 @receiver(m2m_changed, sender=Item.collections.through)
 def update_item_privacy(sender, instance, action, **kwargs):
     if action in ["post_add", "post_remove", "post_clear"]:
-        # Check if any of the item's collections are private
-        has_private = instance.collections.filter(is_private=True).exists()
-        instance.private_collection = has_private
+        # Check if we're dealing with an Item instance
+        if hasattr(instance, 'collections'):
+            # Instance is an Item, check if any of its collections are private
+            has_private = instance.collections.filter(is_private=True).exists()
+            instance.private_collection = has_private
+            instance.save()
+        # If instance is a Collection, we need to update all its items
+        elif hasattr(instance, 'items'):
+            for item in instance.items.all():
+                # Check if any of the item's collections are private
+                has_private = item.collections.filter(is_private=True).exists()
+                item.private_collection = has_private
         instance.save()
