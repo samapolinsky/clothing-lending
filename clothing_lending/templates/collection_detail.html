@@ -436,6 +436,20 @@
         <div class="card">
             <h2 class="collection-title">{{ collection.name }}</h2>
             <p class="collection-description">{{ collection.description }}</p>
+            {% if collection.is_private %}
+                <div class="allowed-patrons-section">
+                    <h4>Allowed Patrons</h4>
+                    {% if collection.allowed_patrons.all %}
+                        <ul class="allowed-patrons-list">
+                            {% for patron in collection.allowed_patrons.all %}
+                                <li>{{ patron.user.username }}{% if patron.custom_username %} ({{ patron.custom_username }}){% endif %}</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>No patrons have been granted access yet.</p>
+                    {% endif %}
+                </div>
+            {% endif %}
             <div class="action-buttons">
                 {% if user.is_authenticated and user.user_type == 1 %}
                 <a href="{% url 'librarian_page' %}" class="btn btn-secondary">Back to Dashboard</a>
@@ -564,6 +578,27 @@
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+
+        .allowed-patrons-section {
+            margin: 1rem 0;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .allowed-patrons-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .allowed-patrons-list li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .allowed-patrons-list li:last-child {
+            border-bottom: none;
         }
 
         @media (max-width: 768px) {
