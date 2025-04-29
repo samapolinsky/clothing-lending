@@ -423,6 +423,15 @@
                     {% if item.available %}
                     <a href="{% url 'item_detail' item.id %}" class="borrow-btn">View Details</a>
                     {% endif %}
+                    
+                    {% if user.is_authenticated and user.user_type == 1 %}
+                    <form method="POST" action="{% url 'remove_item_from_collection' collection.id item.id %}" style="position: absolute; top: 10px; right: 10px;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Remove this item from the collection?');">
+                            <i class="fas fa-times"></i> Remove
+                        </button>
+                    </form>
+                    {% endif %}
                 </div>
                 <div class="item-details">
                     <div class="item-meta">
