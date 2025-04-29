@@ -92,6 +92,23 @@ class AddItemToCollectionForm(forms.Form):
                     f"Item '{self.item.name}' is in a private collection and cannot be added to others."
                 )
 
+# Make ANOTHER form to add to collection from the collections page
+class AddItemToCollectionFromCollectionForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
+        self.collection = kwargs.pop('collection', None)
+        super(AddItemToCollectionFromCollectionForm, self).__init__(*args, **kwargs)
+        if self.collection.is_private:
+            self.fields['items'].queryset = Item.objects.filter(collections__isnull=True)
+        else:
+            self.fields['items'].queryset = Item.objects.filter(private_collection=False)
+
+
+    items = forms.ModelMultipleChoiceField(
+        queryset=Item.objects.none(),
+        widget=forms.SelectMultiple(attrs={'class': 'form-control'})
+    )
+
 class PatronProfileForm(forms.ModelForm):
     profile_picture = forms.ImageField(required=False, widget=forms.FileInput(attrs={'class': 'form-control'}))
     
