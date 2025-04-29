@@ -779,10 +779,11 @@ def collection_detail(request, collection_id):
             can_view = False
         else:
             can_view = True
-    #print(can_view)
+    
+    # Get all librarians for display in private collections
+    librarians = Librarian.objects.all()
 
     if request.method == 'POST' and 'add_to_collection' in request.POST:
-        # form = AddItemToCollectionForm(request.POST, user=request.user if request.user.is_authenticated else None)
         form = AddItemToCollectionFromCollectionForm(request.POST, user=request.user if request.user.is_authenticated else None, collection=collection)
 
         if form.is_valid():
@@ -792,15 +793,18 @@ def collection_detail(request, collection_id):
             messages.success(request, 'Selected item(s) added to collection successfully.')
             return redirect('collection_detail', collection_id=collection_id)
     else:
-        # if request.user.is_authenticated:
-        # form = AddItemToCollectionForm(user=request.user)
         form = AddItemToCollectionFromCollectionForm(
             user=request.user if request.user.is_authenticated else None,
             collection=collection
         )
 
-
-    return render(request, 'collection_detail.html', {'collection': collection, 'items': items, 'canview': can_view, 'form':form})
+    return render(request, 'collection_detail.html', {
+        'collection': collection, 
+        'items': items, 
+        'canview': can_view, 
+        'form': form,
+        'librarians': librarians
+    })
 
 
 @user_passes_test(is_librarian)
