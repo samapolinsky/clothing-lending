@@ -637,35 +637,35 @@
             </div>
             {% endfor %}
             {% if canadd %}
-            <div class="item-card">
-                <div class="card-body">
-                <div class="form-section">
-                    <h5>Add Items</h5>
-    
-                    {% if form.non_field_errors %}
-                        <div class="error-box">
-                            {% for error in form.non_field_errors %}
-                                <p>{{ error }}</p>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-    
-                    <form method="POST">
-                        {% csrf_token %}
-                        <div class="form-group">
-                            {{ form.items }}
-                            {% if form.items.errors %}
-                            <div class="field-error">
-                                {% for error in form.items.errors %}
-                                <small>{{ error }}</small>
+            <div class="item-card" style="text-align: center;">
+                <div class="card-body" style="padding-top: 1rem;">
+                    <div class="form-section" style="margin-top: 0; padding-top: 0; border-top: none;">
+                        <h5 style="margin-bottom: 1rem;">Add Item</h5>
+
+                        {% if form.non_field_errors %}
+                            <div class="error-box">
+                                {% for error in form.non_field_errors %}
+                                    <p>{{ error }}</p>
                                 {% endfor %}
                             </div>
-                            {% endif %}
-                        </div>
-    
-                        <button type="submit" name="add_to_collection" class="btn btn-primary">Add to Collection</button>
-                    </form>
-                </div>
+                        {% endif %}
+
+                        <form method="POST">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                {{ form.items }}
+                                {% if form.items.errors %}
+                                <div class="field-error">
+                                    {% for error in form.items.errors %}
+                                    <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <button type="submit" name="add_to_collection" class="btn btn-primary">Add to Collection</button>
+                        </form>
+                    </div>
                 </div>
             </div>
             {% endif %}
