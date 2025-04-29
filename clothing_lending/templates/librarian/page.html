@@ -302,6 +302,20 @@
         .form-group {
             flex: 1;
         }
+
+        .nav-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .user-info {
+            color: #666;
+            /* margin-right: 2rem; */
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
     </style>
 </head>
 <body>
@@ -310,6 +324,9 @@
             <h1><a href="{% url 'browse' %}" style="color: white; text-decoration: none;">AIRDROBE DASHBOARD</a></h1>
             <div class="nav-actions">
                 {% if user.is_authenticated %}
+                    <span class="user-info">
+                        {{ patron.custom_username|default:user.username }}
+                    </span>
                     <a href="{% url 'browse' %}" class="btn btn-secondary">Browse Items</a>
                     <a href="{% url 'logout' %}" class="btn btn-secondary">Exit</a>
                 {% endif %}

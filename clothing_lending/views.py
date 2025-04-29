@@ -807,6 +807,12 @@ def delete_item(request, item_id):
 def collection_detail(request, collection_id):
     collection = get_object_or_404(Collection, pk=collection_id)
     items = collection.items.all()
+    
+    # Get patron for the current user if authenticated
+    patron = None
+    if request.user.is_authenticated and request.user.user_type == 2:
+        patron, created = Patron.objects.get_or_create(user=request.user)
+    
     if request.user.is_authenticated:
         can_view = user_can_view_collection(request.user, collection)
     else:
@@ -861,13 +867,26 @@ def collection_detail(request, collection_id):
             collection=collection
         )
 
-    return render(request, 'collection_detail.html', {
-        'collection': collection, 
-        'items': items, 
-        'canview': can_view, 
-        "canadd": can_add, "canedit": can_edit, 'form': form,
-        'librarians': librarians
-    })
+    # return render(request, 'collection_detail.html', {
+    #     'collection': collection, 
+    #     'items': items, 
+    #     'canview': can_view, 
+    #     "canadd": can_add, "canedit": can_edit, 'form': form,
+    #     'librarians': librarians
+    #     # 'patron': patron,
+    # })
+
+    context = {
+        'collection': collection,
+        'items': items,
+        'canview': can_view,
+        'canadd': can_add,
+        'canedit': can_edit,
+        'librarians': librarians,
+        'patron': patron,
+    }
+    
+    return render(request, 'collection_detail.html', context)
 
 
 @user_passes_test(is_librarian)
