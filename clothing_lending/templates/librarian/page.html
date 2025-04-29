@@ -535,6 +535,7 @@
                                         <th>Category</th>
                                         <th>Borrower</th>
                                         <th>Borrowed Since</th>
+                                        <th>Due By</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -551,6 +552,7 @@
                                         </td>
                                         <td>{{ lending.borrower.user.username }}</td>
                                         <td>{{ lending.approved_date|date:"M d, Y" }}</td>
+                                        <td>{{ lending.due_date|date:"M d, Y" }}</td>
                                         <td>
                                             <form method="POST" action="{% url 'manage_lending_request' lending.id %}">
                                                 {% csrf_token %}

@@ -7,6 +7,7 @@ from django.contrib import messages
 import uuid
 from django.db.models import Q
 from django.utils import timezone
+from datetime import timedelta
 
 from clothing_lending.models import User, Patron, Librarian, Collection, Item, Lending, Invite, Category, Rating
 from clothing_lending.forms import CollectionForm, ItemForm, PromoteUserForm, AddItemToCollectionForm, AddItemToCollectionFromCollectionForm, PatronProfileForm, RateItemForm
@@ -992,6 +993,8 @@ def patron_page(request):
         status='APPROVED'
     ).order_by('-approved_date')
 
+    #print(approved_items)
+
     borrowing_history = Lending.objects.filter(
         borrower=patron,
         status__in=['RETURNED', 'REJECTED']
@@ -1227,6 +1230,7 @@ def manage_lending_request(request, lending_id):
     if action == 'approve':
         lending.status = 'APPROVED'
         lending.approved_date = timezone.now()
+        lending.due_date = timezone.now() + timedelta(days=14)
         messages.success(request, f'Lending request for {lending.item.name} has been approved.')
     elif action == 'reject':
         lending.status = 'REJECTED'

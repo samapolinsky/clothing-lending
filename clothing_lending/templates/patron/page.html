@@ -476,7 +476,7 @@
                     <h4>Currently Borrowed Items</h4>
                 </div>
                 <div class="card-body">
-                    {% if currently_borrowed %}
+                    {% if approved_items %}
                         <div class="table-responsive">
                             <table class="table">
                                 <thead>
@@ -484,20 +484,22 @@
                                         <th>Item</th>
                                         <th>Category</th>
                                         <th>Borrowed Since</th>
+                                        <th>Due By</th>
                                         <th>Return Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for lending in currently_borrowed %}
+                                    {% for lending in approved_items %}
                                     <tr>
                                         <td>
                                             <a href="{% url 'item_detail' lending.item.id %}" class="title-link">{{ lending.item.name }}</a>
                                         </td>
                                         <td>{{ lending.item.category }}</td>
                                         <td>{{ lending.approved_date|date:"M d, Y" }}</td>
+                                        <td>{{ lending.due_date|date:"M d, Y" }}</td>
                                         <td>
                                             {% if not lending.return_requested %}
-                                                <form method="POST" action="{% url 'request_return' lending.id %}">
+                                                <form method="POST" action="#"> <!--<td>{{ lending.approved_date|date:"M d, Y" }}</td>-->
                                                     {% csrf_token %}
                                                     <button type="submit" class="btn btn-primary btn-sm">Request Return</button>
                                                 </form>

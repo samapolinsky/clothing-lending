@@ -106,6 +106,7 @@ class Lending(models.Model):
     request_date = models.DateTimeField(default=timezone.now)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='PENDING')
     approved_date = models.DateTimeField(null=True, blank=True)
+    due_date = models.DateTimeField(null=True, blank=True)
     return_date = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
@@ -125,7 +126,7 @@ class Invite(models.Model):
     request_date = models.DateTimeField(default=timezone.now)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='PENDING')
     approved_date = models.DateTimeField(null=True, blank=True)
-    return_date = models.DateTimeField(null=True, blank=True)
+    #return_date = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.requester} - {self.collection.name} ({self.get_status_display()})"
