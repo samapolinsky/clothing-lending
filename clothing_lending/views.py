@@ -811,6 +811,20 @@ def collection_detail(request, collection_id):
             can_view = True
     #print(can_view)
 
+    # Now let's have some other fun conditions
+    can_add = False
+    can_edit = False
+    if request.user.is_authenticated:
+        if request.user.user_type == 1:
+            can_add = True
+            can_edit = True
+        else:
+            if collection.created_by == request.user:
+                can_add = True
+                can_edit = True
+    
+        
+
     if request.method == 'POST' and 'add_to_collection' in request.POST:
         # form = AddItemToCollectionForm(request.POST, user=request.user if request.user.is_authenticated else None)
         form = AddItemToCollectionFromCollectionForm(request.POST, user=request.user if request.user.is_authenticated else None, collection=collection)
@@ -830,7 +844,7 @@ def collection_detail(request, collection_id):
         )
 
 
-    return render(request, 'collection_detail.html', {'collection': collection, 'items': items, 'canview': can_view, 'form':form})
+    return render(request, 'collection_detail.html', {'collection': collection, 'items': items, 'canview': can_view, "canadd": can_add, "canedit": can_edit, 'form':form})
 
 
 @user_passes_test(is_librarian)
