@@ -1,4 +1,5 @@
 {% load socialaccount %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -24,13 +25,20 @@
     <header>
         <div class="header-content">
             <h1 class="scramble-text"><a href="{% url 'browse' %}" style="color: white; text-decoration: none;">AIRDROBE</a><br></h1>
-            <nav>
+            <!-- <nav> -->
+            <div class="nav-actions">
                 {% if user.is_authenticated %}
                     {% if user.user_type == 2 %}
                         {% with patron=user.patron %}
                             <span class="user-info">
                                 {{ patron.custom_username|default:user.username }}
                             </span>
+
+                            {% if patron.profile_picture %}
+                                <img src="{{ patron.profile_picture }}" alt="Profile Picture" class="profile-img">
+                            {% else %}
+                                <img src="{% static 'patron/default_pfp.png' %}" alt="Default Profile Picture" class="profile-img">
+                            {% endif %}
                             
                             <a href="{% url 'patron_page' %}" class="btn btn-primary">Patron Dashboard</a>
                             <a href="{% url 'logout' %}" class="logout-btn">Exit</a>
@@ -43,7 +51,8 @@
                 {% else %}
                     <a href="{% provider_login_url 'google' %}" class="login-btn">Sign In</a>
                 {% endif %}
-            </nav>
+            <!-- </nav> -->
+            <div class="nav-actions">
         </div>
     </header>
 
@@ -306,10 +315,23 @@
 
         .user-info {
             color: #666;
-            margin-right: 2rem;
+            /* margin-right: 2rem; */
             font-size: 0.9rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
+        }
+        
+        .profile-img {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 0;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
         }
 
         .btn {
@@ -325,8 +347,8 @@
 
         .logout-btn, .login-btn {
             background: none;
-            color: white;
-            border: 1px solid white;
+            color: darkgrey;
+            border: 1px solid darkgrey;
             padding: 0.5rem 1.5rem;
             text-decoration: none;
             font-size: 0.9rem;

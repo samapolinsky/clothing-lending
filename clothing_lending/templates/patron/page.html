@@ -67,15 +67,27 @@
         }
         
         .btn-secondary {
-            color: #666;
+            /* color: #666; */
+            background: none;
+            color: darkgrey;
+            border: 1px solid darkgrey;
+            padding: 0.5rem 1.5rem;
+            text-decoration: none;
+            font-size: 0.9rem;
+            letter-spacing: 0.05em;
+            transition: all 0.3s ease;
         }
         
         .btn-primary:hover {
-            background: #333;
+            /* background: #333; */
+            background: white;
+            color: #111;
         }
         
         .btn-secondary:hover {
-            border-color: #111;
+            /* border-color: #111;
+            color: #111; */
+            background: white;
             color: #111;
         }
         
@@ -273,6 +285,14 @@
             font-size: 0.9rem;
             margin-right: 1rem;
         }
+
+        .user-info {
+            color: #666;
+            /* margin-right: 2rem; */
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
     </style>
 </head>
 <body>
@@ -281,12 +301,15 @@
             <h1><a href="{% url 'browse' %}" style="color: white; text-decoration: none;">AIRDROBE DASHBOARD</a></h1>
             <div class="nav-actions">
                 {% if user.is_authenticated %}
-                    <span class="user-name">
+                    <!-- <span class="user-name">
                         {% if patron.custom_username %}
                             {{ patron.custom_username }}
                         {% else %}
                             {{ user.username }}
                         {% endif %}
+                    </span> -->
+                    <span class="user-info">
+                        {{ patron.custom_username|default:user.username }}
                     </span>
                     {% if patron.profile_picture %}
                         <img src="{{ patron.profile_picture }}" alt="Profile Picture" class="profile-img">
