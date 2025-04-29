@@ -471,6 +471,15 @@ def item_detail(request, item_id):
         for collection in collections:
             if collection.is_private:
                 can_view = False
+
+    # check if you can review
+    can_review = False
+    if request.user.is_authenticated and request.user.user_type == 2:
+        if not Rating.objects.filter(Q(item=item) & Q(rater=patron)).exists():
+            can_review = True
+
+    print(can_review)
+
     if request.method == 'POST' and 'add_to_collection' in request.POST:
         # form = AddItemToCollectionForm(request.POST, user=request.user if request.user.is_authenticated else None)
         form = AddItemToCollectionForm(request.POST, user=request.user if request.user.is_authenticated else None, item=item)
@@ -489,7 +498,7 @@ def item_detail(request, item_id):
             item=item
         )
 
-    return render(request, 'item_detail.html', {'item': item, 'form': form, 'ratings': ratings, 'avg': avg, 'canview': can_view, 'patron': patron})
+    return render(request, 'item_detail.html', {'item': item, 'form': form, 'ratings': ratings, 'avg': avg, 'canview': can_view, 'patron': patron, 'canreview': can_review})
 
 # stuff to rate an item yippeee
 @user_passes_test(is_patron)
@@ -532,6 +541,53 @@ def rate_item(request, item_id):
         form = RateItemForm()
         #print(form)
     return render(request, 'rate_item.html', {'item': item, 'form': form})
+
+@user_passes_test(is_patron)
+def edit_rating(request, item_id):
+    patron = request.user.patron
+    item = get_object_or_404(Item, pk=item_id)
+    if not Rating.objects.filter(Q(item=item) & Q(rater=patron)).exists():
+        messages.warning(request, 'You cannot edit a review you have not posted.')
+        return redirect('item_detail', item_id=item_id)
+    rating = get_object_or_404(Rating, Q(item=item) & Q(rater=patron))
+    orig_rate_date = rating.rate_date
+    if request.method == 'POST':
+        form = RateItemForm(request.POST or None, instance=rating)
+        print("Form submitted.")
+        if form.is_valid():
+            print("Form is valid")
+            #numrating = form.cleaned_data['numrating']
+            #comment = form.cleaned_data['comment']
+
+            # Check if user already has rated this item
+            #existing_rating = Rating.objects.filter(
+                #item=item,
+                #rater=patron,
+            #).exists()
+
+            #print(f"Existing rating check: {existing_rating}")  # Debug print
+
+            #if existing_rating:
+                #messages.warning(request, 'You cannot review the same item twice.')
+                #return redirect('item_detail', item_id=item_id)
+
+            rating = form.save(commit=False) # make a rating!
+            rating.rater = patron
+            rating.item = item
+            rating.rate_date = orig_rate_date # don't overwrite original rate date
+
+            # Save the rating
+            rating.save()
+            form.save_m2m()
+            messages.success(request, 'Your review has been updated!')
+            return redirect('item_detail', item_id=item_id)
+        else:
+            print(f"Form errors: {form.errors}")
+    else:
+        #print("I am loading a form")
+        form = RateItemForm(instance=rating)
+        #print(form)
+    return render(request, 'edit_rating.html', {'item': item, 'form': form})
 
 def test_s3_connection(request):
     """
