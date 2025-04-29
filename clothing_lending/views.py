@@ -53,8 +53,20 @@ def librarian_page(request):
 
     active_lendings = Lending.objects.filter(
         item__created_by=librarian,
-        status='APPROVED'
+        status='APPROVED',
+        return_requested=False
     ).order_by('-approved_date')
+
+    #print(active_lendings)
+
+    # filter returns requested
+    returns_requested = Lending.objects.filter(
+        item__created_by=librarian,
+        status='APPROVED',
+        return_requested=True
+    ).order_by('-approved_date')
+
+    #print(returns_requested)
 
     # Finally, show pending invites!
     pending_invites = Invite.objects.filter(
@@ -68,6 +80,7 @@ def librarian_page(request):
         'form': promote_form,
         'pending_requests': pending_requests,
         'active_lendings': active_lendings,
+        'returns_requested': returns_requested,
         'pending_invites': pending_invites
     }
 

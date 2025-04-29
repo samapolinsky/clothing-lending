@@ -536,11 +536,55 @@
                                         <th>Borrower</th>
                                         <th>Borrowed Since</th>
                                         <th>Due By</th>
-                                        <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for lending in active_lendings %}
+                                    <tr>
+                                        <td>
+                                            <a href="{% url 'item_detail' lending.item.id %}" class="title-link">{{ lending.item.name }}</a>
+                                        </td>
+                                        <td>
+                                            {% for category in lending.item.categories.all %}
+                                                {{ category.name }}{% if not forloop.last %}, {% endif %}
+                                            {% endfor %}
+                                        </td>
+                                        <td>{{ lending.borrower.user.username }}</td>
+                                        <td>{{ lending.approved_date|date:"M d, Y" }}</td>
+                                        <td>{{ lending.due_date|date:"M d, Y" }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-secondary">
+                            No active lendings for your items.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h4>Requested Returns</h4>
+                </div>
+                <div class="card-body">
+                    {% if returns_requested %}
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Category</th>
+                                        <th>Borrower</th>
+                                        <th>Borrowed Since</th>
+                                        <th>Due By</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for lending in returns_requested %}
                                     <tr>
                                         <td>
                                             <a href="{% url 'item_detail' lending.item.id %}" class="title-link">{{ lending.item.name }}</a>
@@ -567,7 +611,7 @@
                         </div>
                     {% else %}
                         <div class="alert alert-secondary">
-                            No active lendings for your items.
+                            No items requested to be returned.
                         </div>
                     {% endif %}
                 </div>
