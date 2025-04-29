@@ -13,6 +13,7 @@ class CollectionForm(forms.ModelForm):
             'allowed_patrons': forms.SelectMultiple(attrs={'class': 'form-control'})
         }
 
+
 class ItemForm(forms.ModelForm):
     image = forms.ImageField(required=False, widget=forms.FileInput(attrs={'class': 'form-control'}))
     new_category = forms.CharField(required=False, label='New Category')

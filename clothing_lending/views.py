@@ -252,7 +252,9 @@ def edit_collection(request, collection_id):
         form = CollectionForm(request.POST, instance=orig_collection)
         if form.is_valid():
             collection = form.save(commit=False)
-            collection.created_by = request.user
+            collection.is_private = orig_collection.is_private
+            collection.created_by = orig_collection.created_by
+            collection.created_at = orig_collection.created_at
             collection.save()
             form.save_m2m()
             messages.success(request, 'Collection updated successfully!')
@@ -263,7 +265,7 @@ def edit_collection(request, collection_id):
     else:
         form = CollectionForm(instance=orig_collection)
 
-    return render(request, 'edit_collection.html', {'form': form, 'user': user})
+    return render(request, 'edit_collection.html', {'form': form, 'user': user, 'collection': collection})
 
 
 def user_can_view_collection(user, collection):
