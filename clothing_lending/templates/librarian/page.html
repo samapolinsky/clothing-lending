@@ -440,8 +440,8 @@
                                         <td>
                                             {% with request.item.categories.all|slice:":2" as display_categories %}
                                                 {{ display_categories|join:", " }}
-                                                {% if item.categories.count > 2 %}
-                                                    +{{ item.categories.count|add:"-2" }} more
+                                                {% if request.item.categories.count > 2 %}
+                                                    +{{ request.item.categories.count|add:"-2" }} more
                                                 {% endif %}
                                             {% endwith %}
                                         </td>
