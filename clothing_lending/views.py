@@ -1010,7 +1010,12 @@ def patron_page(request):
 
     borrowing_history = Lending.objects.filter(
         borrower=patron,
-        status__in=['RETURNED', 'REJECTED']
+        status__in=['RETURNED']
+    ).order_by('-request_date')[:10]  # Show last 10 items
+
+    rejected_requests = Lending.objects.filter(
+        borrower=patron,
+        status__in=['REJECTED']
     ).order_by('-request_date')[:10]  # Show last 10 items
 
     # Now get invites!
@@ -1031,6 +1036,7 @@ def patron_page(request):
         'pending_invites': pending_invites,
         'approved_items': approved_items,
         'borrowing_history': borrowing_history,
+        'rejected_requests': rejected_requests,
         'my_ratings': my_ratings
     }
 
@@ -1262,6 +1268,7 @@ def manage_lending_request(request, lending_id):
         messages.success(request, f'Lending request for {lending.item.name} has been approved.')
     elif action == 'reject':
         lending.status = 'REJECTED'
+        lending.rejected_date = timezone.now()
         lending.item.available = True
         lending.item.save()
         messages.success(request, f'Lending request for {lending.item.name} has been rejected.')

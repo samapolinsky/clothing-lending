@@ -41,6 +41,7 @@ class Collection(models.Model):
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='collections')
     is_private = models.BooleanField(default=False)
     allowed_patrons = models.ManyToManyField(Patron, blank=True, related_name='allowed_collections')
+    #example_field = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -109,6 +110,7 @@ class Lending(models.Model):
     due_date = models.DateTimeField(null=True, blank=True)
     return_requested = models.BooleanField(default=False)
     return_date = models.DateTimeField(null=True, blank=True)
+    rejected_date = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.borrower} - {self.item.name} ({self.get_status_display()})"

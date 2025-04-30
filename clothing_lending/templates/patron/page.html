@@ -545,7 +545,9 @@
                                         <td>
                                             <a href="{% url 'item_detail' lending.item.id %}" class="title-link">{{ lending.item.name }}</a>
                                         </td>
-                                        <td>{{ lending.item.category }}</td>
+                                        <td>{% for category in lending.item.categories.all %}
+                                            {{ category.name }}{% if not forloop.last %}, {% endif %}
+                                        {% endfor %}</td>
                                         <td>{{ lending.approved_date|date:"M d, Y" }}</td>
                                         <td>{{ lending.return_date|date:"M d, Y" }}</td>
                                     </tr>
@@ -583,7 +585,9 @@
                                         <td>
                                             <a href="{% url 'item_detail' request.item.id %}" class="title-link">{{ request.item.name }}</a>
                                         </td>
-                                        <td>{{ request.item.category }}</td>
+                                        <td>{% for category in request.item.categories.all %}
+                                            {{ category.name }}{% if not forloop.last %}, {% endif %}
+                                        {% endfor %}</td>
                                         <td>{{ request.request_date|date:"M d, Y" }}</td>
                                         <td>{{ request.rejected_date|date:"M d, Y" }}</td>
                                     </tr>

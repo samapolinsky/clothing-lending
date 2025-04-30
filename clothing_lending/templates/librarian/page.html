@@ -438,7 +438,7 @@
                                             <a href="{% url 'item_detail' request.item.id %}" class="title-link">{{ request.item.name }}</a>
                                         </td>
                                         <td>
-                                            {% with item.categories.all|slice:":2" as display_categories %}
+                                            {% with request.item.categories.all|slice:":2" as display_categories %}
                                                 {{ display_categories|join:", " }}
                                                 {% if item.categories.count > 2 %}
                                                     +{{ item.categories.count|add:"-2" }} more
