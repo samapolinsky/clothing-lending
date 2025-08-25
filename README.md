@@ -4,8 +4,8 @@ AIRDROBE is a clothing lending application in which users can upload clothing to
 ## Local Development Setup
 1. Clone the repository
 2. Create and activate a virtual environment
-3. Install dependencies
+3. Install dependencies:
 `pip install -r requirements.txt`
 4. Run migrations
-5. Run development server
+5. Run development server:
 `python manage.py runserver`
